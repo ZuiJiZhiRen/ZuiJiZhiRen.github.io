@@ -2,8 +2,6 @@
 
 
 
-  
-
 
 
 
@@ -20,9 +18,9 @@
   
   
   
-    <meta name="description" content="java springboot springCloud 。。。。">
+    <meta name="description" content="学习的博客地址http://blog.jobbole.com/113789/">
   
-  <title>分类: redis [ 志文的个人博客 ]</title>
+  <title>redis一些知识 [ 志文的个人博客 ]</title>
   
   
     <link rel="shortcut icon" href="/favicon.ico">
@@ -48,6 +46,24 @@
 </div>
 <div class="side-navigate hide-area">
   
+    <div class="item prev">
+      <a href="/2018/11/20/springCloud/springCloud学习记录/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        springCloud学习记录
+      </div>
+    </div>
+  
+  
+    <div class="item next">
+      <a href="/2018/11/20/distuted/redis分布式锁二/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        redis集群分布式锁实现
+      </div>
+    </div>
   
 </div>
 <div id="outer-container" class="hide-area">
@@ -105,231 +121,201 @@
     <div id="content-inner">
       
       
-  <article id="page">
+  <article id="post">
+    <h1>redis一些知识</h1>
+    <p class="page-title-sub">
+      <span id="post-title-date">撰写于 2018-11-20</span>
+      
+        <span id="post-title-updated">修改于 2018-11-20</span>
+      
+      
+      <span id="post-title-categories">分类
+      
+      
+        
+        
+        <a href="/categories/redis/">redis</a>
+      
+      </span>
+      
+      
+    </p>
     
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <h1 class="center-title">
-          分类
-          
-        </h1>
-      
-    
-      
-    
-      
-    
-    <ul class="category-list">
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/index/">index</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/设计模式/">设计模式</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/分布式锁/">分布式锁</a>
-        
-          <span class="category-list-count">4</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/jvm/">jvm</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/算法/">算法</a>
-        
-          <span class="category-list-count">3</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/mysql/">mysql</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/数据结构/">数据结构</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a class="active" href="/categories/redis/">redis</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/springCloud/">springCloud</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-        <li class="category-list-item">
-        
-          <a href="/categories/集合/">集合</a>
-        
-          <span class="category-list-count">1</span>
-        </li>
-      
-    </ul>
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-          
-        
-      
-      
-      <div class="post-title-item">
-  
-  <a href="/2018/11/20/redis/redis一些知识/">
-  
-    redis一些知识
-  
-  </a>
-  <p class="page-title-sub">
-    <span id="post-title-date">11-20</span>
-    
-    <span id="post-title-categories">分类
-    
-    
-      
-      
-      <a href="/categories/redis/">redis</a>
-    
-    </span>
-    
-    
-    
-      <br>
-      
-      
-    
-  </p>
-  
-</div>
-      
-    
-      
-      
-        
-      
-      
-    
-      
-      
-        
-      
-      
-    
+    <p>学习的博客地址<a href="http://blog.jobbole.com/113789/" target="_blank" rel="noopener">http://blog.jobbole.com/113789/</a></p>
+
   </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
+  <div class="random-toc">
+    <h2>目录</h2>
+    
+  </div>
+</div>
 
   
+<nav id="pagination">
+  
+    <a href="/2018/11/20/springCloud/springCloud学习记录/" class="prev">&larr; 上一篇 springCloud学习记录</a>
+  
+
+  
+
+  
+    <a href="/2018/11/20/distuted/redis分布式锁二/" class="next">下一篇 redis集群分布式锁实现 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+  
+  <style>
+    .donation {
+      width: 100%;
+      margin-top: 2rem;
+    }
+    .donation .text[name="zhifubao"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .donation .text[name="weixin"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding-left:546px; 
+    }
+    .donation .text:hover {
+      color: rgb(63,134,181);
+    }
+    .donation .img-box {
+      transition: all .3s;
+      width: 0;
+      height: 0;
+      margin: 1rem auto;
+      overflow: hidden;
+    }
+    .donation .img-box img {
+      width: 100%;
+      height: 100%;
+    }
+    .donation #donation {
+      display: none;
+    }
+    .donation #donation:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+    .donation #donation1 {
+      display: none;
+    }
+    .donation #donation1:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+  </style>
+  <div class="donation">
+  如果你觉得文章对你有帮助，并且钱多的没地方花的时候，点这里～
+    <label class="text" name="zhifubao" for="donation">
+      支付宝
+    </label>
+    <input type="checkbox" name="donation" id="donation">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation.jpg" alt="donation">
+    </div>
+    <label class="text" name="weixin" for="donation1">
+      微信
+    </label>
+    <input type="checkbox" name="donation" id="donation1">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation1.jpg" alt="donation">
+    </div>
+  </div>
+
+
+  
+
+
+<style>
+	gitment_title:hover {
+	color: #fff;
+	background: #0a9caf;
+	background-image: initial;
+	background-position-x: initial;
+	background-position-y: initial;
+	background-size: initial;
+	background-repeat-x: initial;
+	background-repeat-y: initial;
+	background-attachment: initial;
+	background-origin: initial;
+	background-clip: initial;
+	background-color: rgb(10, 156, 175);
+	}
+	.gitment_title {
+	border: 1px solid #0a9caf;
+	border-top-color: rgb(10, 156, 175);
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-right-color: rgb(10, 156, 175);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-bottom-color: rgb(10, 156, 175);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(10, 156, 175);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	border-radius: 4px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	}
+	.gitment_title {
+	display: inline-block;
+	padding: 0 15px;
+	padding-top: 0px;
+	padding-right: 15px;
+	padding-bottom: 0px;
+	padding-left: 15px;
+	color: #0a9caf;
+	cursor: pointer;
+	font-size: 14px;
+	}
+</style>
+<div onclick="showGitment()" id="gitment_title" class="gitment_title">显示 Gitment 评论</div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+function showGitment() {
+$("#gitment_title").attr("style", "display:none");
+$("#gitalk-container").attr("style", "").addClass("gitment_container");
+var gitment = new Gitalk({
+id: hex_md5(window.location.pathname),
+owner: 'ZuiJiZhiRen',
+repo: 'comment',
+clientID: '26b1ecdcbd2a38769dec',
+clientSecret: 'b1848c935f489b3ce679458d801a3d9c1418ce98',
+admin: 'ZuiJiZhiRen',
+distractionFreeMode: 'true'
+});
+gitment.render('gitalk-container');
+}
+</script>
+
+
+ 
+
 
       
       

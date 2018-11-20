@@ -1,0 +1,476 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="文哥">
+  
+  
+  <meta name="keywords" content="java js python">
+  
+  
+  
+    <meta name="description" content="二分法今天看到一个博客，说 java.util.Arrays.binarySearch（）曾经写错了，将近十年没有被发现。我现在将代码实现下，大家看看有什么问题。
+1234567891011121314151617public static void main(String[] args) &#123;       int[] data = &#123;1, 2, 3, 4, 5, 6, 7...">
+  
+  <title>二分法的一些bug和实现 [ 志文的个人博客 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+  <link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+  
+</head>
+
+<body>
+<div id="access_people_count" style="display:none;">
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+</div>
+<div class="side-navigate hide-area">
+  
+    <div class="item prev">
+      <a href="/2018/11/20/distuted/分布式锁实现方案/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        分布式锁的实现方案
+      </div>
+    </div>
+  
+  
+    <div class="item next">
+      <a href="/2018/11/20/distuted/zk分布式锁的原理和实现/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        zk分布式锁的原理和实现
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onclick="openUserCard()">
+          <img id="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+          <div id="homelink">志文的个人博客</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories/index/">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://gitee.com/ZuiJi">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  <article id="post">
+    <h1>二分法的一些bug和实现</h1>
+    <p class="page-title-sub">
+      <span id="post-title-date">撰写于 2018-11-20</span>
+      
+        <span id="post-title-updated">修改于 2018-11-20</span>
+      
+      
+      <span id="post-title-categories">分类
+      
+      
+        
+        
+        <a href="/categories/算法/">算法</a>
+      
+      </span>
+      
+      
+    </p>
+    
+    <h2 id="二分法"><a href="#二分法" class="headerlink" title="二分法"></a>二分法</h2><p>今天看到一个博客，说 java.util.Arrays.binarySearch（）曾经写错了，将近十年没有被发现。我现在将代码实现下，大家看看有什么问题。</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">       int[] data = &#123;1, 2, 3, 4, 5, 6, 7, 8, 9, 10&#125;;</span><br><span class="line">       int key = 8;</span><br><span class="line"></span><br><span class="line">       int hight = data.length - 1;</span><br><span class="line">       int low = 0;</span><br><span class="line">       while (low &lt;= hight) &#123;</span><br><span class="line">           int mid = (hight + low) / 2;</span><br><span class="line">           if (data[mid] &gt; key)</span><br><span class="line">               low = mid++;</span><br><span class="line">           else if (data[mid] &lt; key)</span><br><span class="line">               hight = mid--;</span><br><span class="line">           else break;</span><br><span class="line">       &#125;</span><br><span class="line">       System.out.println((hight + low) / 2 + 1);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>先自己写了一个二分查询，结果死循环了，断点跟了下 0– 一直为0,很尴尬。<br>想了下 很尴尬啊–是先赋值在减的，习惯用–都忘了好多细节，所以上面的代码错完了。<br>不清楚的可以运行下下面的代码</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int k = 0;</span><br><span class="line">       System.out.println(k--);</span><br><span class="line">       System.out.println(k);</span><br></pre></td></tr></table></figure>
+</code></pre><p>终于把二分写好了</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">int[] data = &#123;1, 2, 3, 4, 5, 6, 7, 8, 9, 10&#125;;</span><br><span class="line">       int key = 8;</span><br><span class="line"></span><br><span class="line">       int hight = data.length - 1;</span><br><span class="line">       int low = 0;</span><br><span class="line">       while (low &lt;= hight) &#123;</span><br><span class="line">           int mid = (hight + low) / 2;</span><br><span class="line">           if (data[mid] &lt; key)</span><br><span class="line">               low = ++mid;</span><br><span class="line">           else if (data[mid] &gt; key)</span><br><span class="line">               hight = --mid;</span><br><span class="line">           else break;</span><br><span class="line">       &#125;</span><br><span class="line">       System.out.println((hight + low) / 2+1);</span><br></pre></td></tr></table></figure>
+</code></pre><p>这样的代码就对了吗？<br>我觉得我辛苦写出来的代码应该没有问题了，想了好久也没有想出来，只能看别人的答案了 <br><br>int mid = (hight + low) / 2;会出现溢出。我瞬间知道了int 长度是有限（2147483647）2的31次方，只能说自己的基础知识还是不扎实，不由得想起了上学时的自己，上课玩手机真的是浪费自己的时间啊。<br>那是如何解决的呢？ 位移运算如果大家知道的话就很简单了int mid = (hight + low) &gt;&gt;&gt; 1。其实二分法我很久没写了，我想了好长时间。</p>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
+  <div class="random-toc">
+    <h2>目录</h2>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#二分法"><span class="toc-text">二分法</span></a></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+    <a href="/2018/11/20/distuted/分布式锁实现方案/" class="prev">&larr; 上一篇 分布式锁的实现方案</a>
+  
+
+  
+
+  
+    <a href="/2018/11/20/distuted/zk分布式锁的原理和实现/" class="next">下一篇 zk分布式锁的原理和实现 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+  
+  <style>
+    .donation {
+      width: 100%;
+      margin-top: 2rem;
+    }
+    .donation .text[name="zhifubao"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .donation .text[name="weixin"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding-left:546px; 
+    }
+    .donation .text:hover {
+      color: rgb(63,134,181);
+    }
+    .donation .img-box {
+      transition: all .3s;
+      width: 0;
+      height: 0;
+      margin: 1rem auto;
+      overflow: hidden;
+    }
+    .donation .img-box img {
+      width: 100%;
+      height: 100%;
+    }
+    .donation #donation {
+      display: none;
+    }
+    .donation #donation:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+    .donation #donation1 {
+      display: none;
+    }
+    .donation #donation1:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+  </style>
+  <div class="donation">
+  如果你觉得文章对你有帮助，并且钱多的没地方花的时候，点这里～
+    <label class="text" name="zhifubao" for="donation">
+      支付宝
+    </label>
+    <input type="checkbox" name="donation" id="donation">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation.jpg" alt="donation">
+    </div>
+    <label class="text" name="weixin" for="donation1">
+      微信
+    </label>
+    <input type="checkbox" name="donation" id="donation1">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation1.jpg" alt="donation">
+    </div>
+  </div>
+
+
+  
+
+
+<style>
+	gitment_title:hover {
+	color: #fff;
+	background: #0a9caf;
+	background-image: initial;
+	background-position-x: initial;
+	background-position-y: initial;
+	background-size: initial;
+	background-repeat-x: initial;
+	background-repeat-y: initial;
+	background-attachment: initial;
+	background-origin: initial;
+	background-clip: initial;
+	background-color: rgb(10, 156, 175);
+	}
+	.gitment_title {
+	border: 1px solid #0a9caf;
+	border-top-color: rgb(10, 156, 175);
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-right-color: rgb(10, 156, 175);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-bottom-color: rgb(10, 156, 175);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(10, 156, 175);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	border-radius: 4px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	}
+	.gitment_title {
+	display: inline-block;
+	padding: 0 15px;
+	padding-top: 0px;
+	padding-right: 15px;
+	padding-bottom: 0px;
+	padding-left: 15px;
+	color: #0a9caf;
+	cursor: pointer;
+	font-size: 14px;
+	}
+</style>
+<div onclick="showGitment()" id="gitment_title" class="gitment_title">显示 Gitment 评论</div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+function showGitment() {
+$("#gitment_title").attr("style", "display:none");
+$("#gitalk-container").attr("style", "").addClass("gitment_container");
+var gitment = new Gitalk({
+id: hex_md5(window.location.pathname),
+owner: 'ZuiJiZhiRen',
+repo: 'comment',
+clientID: '26b1ecdcbd2a38769dec',
+clientSecret: 'b1848c935f489b3ce679458d801a3d9c1418ce98',
+admin: 'ZuiJiZhiRen',
+distractionFreeMode: 'true'
+});
+gitment.render('gitalk-container');
+}
+</script>
+
+
+ 
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by 文哥 using
+      <a href="http://hexo.io">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+    <p id="description">java springboot springCloud 。。。。</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://gitee.com/ZuiJi">
+        
+          GitHub
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+    <script src="/js/md5.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+    
+      backgroundImages.push('https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg');
+    
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":28};
+var unsplashConfig = {"gravity":"west"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+

@@ -130,7 +130,7 @@ Jre(java runtime environment)是JRE是指java运行环境，jre里面包含�
     <p class="page-title-sub">
       <span id="post-title-date">撰写于 2018-11-20</span>
       
-        <span id="post-title-updated">修改于 2018-11-20</span>
+        <span id="post-title-updated">修改于 2018-11-21</span>
       
       
       <span id="post-title-categories">分类
@@ -208,14 +208,63 @@ Jre(java runtime environment)是JRE是指java运行环境，jre里面包含�
 <li><strong>分代收集算法</strong>：根据对象存活周期，分配不同的内存以及使用适合的收集算法。</li>
 </ul>
 <h3 id="垃圾收集器分类"><a href="#垃圾收集器分类" class="headerlink" title="垃圾收集器分类"></a>垃圾收集器分类</h3><ul>
-<li><strong>serial收集器</strong>：</li>
-<li><strong>parnew收集器</strong>：</li>
-<li><strong>parallel scavenge收集器</strong>:</li>
-<li><strong>serial old收集器</strong>:</li>
-<li><strong>paraller old收集器</strong>:</li>
-<li><strong>cms收集器</strong>:</li>
-<li><strong>g1收集器</strong>:</li>
-<li><strong>zgc收集器</strong>：</li>
+<li><strong>serial收集器</strong>：<ol>
+<li>线程：单线程</li>
+<li>算法：复制算法</li>
+<li>回收位置：回收新生代的数据</li>
+<li>使用原因：效率高，运行在client端效率依旧很好。</li>
+</ol>
+</li>
+<li><strong>parnew收集器</strong>：<ol>
+<li>线程：多线程，相当于多个serial</li>
+<li>算法：复制算法</li>
+<li>回收位置：回收新生代的数据</li>
+<li>使用原因：可以与cms收集器配合使用，运行在server端是比较合适的。</li>
+</ol>
+</li>
+<li><strong>parallel scavenge收集器</strong>:<ol>
+<li>线程：多线程</li>
+<li>算法：复制算法</li>
+<li>回收位置：回收新生代的数据</li>
+<li>使用原因：关注与吞吐量，有自适应调节机制。</li>
+</ol>
+</li>
+<li><strong>serial old收集器</strong>:<ol>
+<li>线程：单线程</li>
+<li>算法：标记-整理算法</li>
+<li>回收位置：回收老生代的数据</li>
+<li>使用原因：关注与吞吐量，有自适应调节机制。</li>
+</ol>
+</li>
+<li><strong>paraller old收集器</strong>:<ol>
+<li>线程：多线程</li>
+<li>算法：标记-整理算法</li>
+<li>回收位置：回收老生代的数据</li>
+<li>使用原因：关注与吞吐量，有自适应调节机制，可以配合parallel scavenge。</li>
+</ol>
+</li>
+<li><strong>cms收集器</strong>:<ol>
+<li>线程：多线程</li>
+<li>算法：标记-清除算法</li>
+<li>回收位置：回收新生代的数据</li>
+<li>使用原因：用户和清理可以同时进行，降低清理时间。</li>
+</ol>
+</li>
+<li><strong>g1收集器</strong>:<ol>
+<li>线程：多线程</li>
+<li>算法：整体使用标记-整理算法，局部使用复制算法</li>
+<li>回收位置：回收region区域的数据。</li>
+<li>使用原因：可控制的GC时间和内存整理碎片少。</li>
+</ol>
+</li>
+<li><strong>zgc收集器</strong>：<ol>
+<li>设计核心：ZGC的核心原则是将读屏障（load barrier）与彩色指针（colored oops）结合使用</li>
+<li>算法：标记-整理算法</li>
+<li>线程：并发</li>
+<li>回收位置：page区域，三种page</li>
+<li>优势：自己百度，我说不好，我现在也没有理解</li>
+</ol>
+</li>
 </ul>
 
   </article>

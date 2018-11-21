@@ -24,7 +24,7 @@ jvm(java virtual machine)是java虚拟机英文缩写，它是java可以跨�
 
 Jre(java runtime environment)是JRE是指java运行环境，jre里面包含两...">
   
-  <title>jvm学习笔记 [ 志文的个人博客 ]</title>
+  <title>jvm学习笔记一 [ 志文的个人博客 ]</title>
   
   
     <link rel="shortcut icon" href="/favicon.ico">
@@ -126,7 +126,7 @@ Jre(java runtime environment)是JRE是指java运行环境，jre里面包含�
       
       
   <article id="post">
-    <h1>jvm学习笔记</h1>
+    <h1>jvm学习笔记一</h1>
     <p class="page-title-sub">
       <span id="post-title-date">撰写于 2018-11-20</span>
       
@@ -193,17 +193,30 @@ Jre(java runtime environment)是JRE是指java运行环境，jre里面包含�
 </li>
 </ol>
 <h2 id="GC"><a href="#GC" class="headerlink" title="GC"></a>GC</h2><p>了解GC,那就需要先了解GC中常用的算法。</p>
-<ol>
-<li>GC中的算法分类<ul>
-<li>引用计数算法：给对象添加一个计数器，每当有一个地方引用它时，计数器加一；当引用失效时，计数器就减一；任何时刻计数器为0的对象就是不可能再被使用的。这是一个不错的算法，但是在主流的jvm虚拟机中没有实现这样的算法，原因是无法解决相互引用出现的问题。</li>
-<li>可达性分析算法：</li>
-<li>标记-清除算法</li>
-<li>复制算法</li>
-<li>标记-整理算法</li>
-<li>分代手机算法</li>
-</ul>
-</li>
+<h3 id="GC中的算法分类"><a href="#GC中的算法分类" class="headerlink" title="GC中的算法分类"></a>GC中的算法分类</h3><ul>
+<li><strong>引用计数算法</strong>：给对象添加一个计数器，每当有一个地方引用它时，计数器加一；当引用失效时，计数器就减一；任何时刻计数器为0的对象就是不可能再被使用的。这是一个不错的算法，但是在主流的jvm虚拟机中没有实现这样的算法，原因是无法解决相互引用出现的问题。</li>
+<li><strong>可达性分析算法</strong>：基本思想是通过一系列称为“GC-Roots”的对象作为起始点，从这些起始点向下搜索，搜索所走过的路称为引用链，当一个对象到“GC-Roots”没有任何引用链相连时，则证明此对象不可用。<br>  那些可以作为“GC-Roots”的对象？<ol>
+<li>虚拟机栈中引用表</li>
+<li>方法区中的静态属性引用对象</li>
+<li>方法区中常量引用对象</li>
+<li>本地方法中的JNI引用对象（native方法）</li>
 </ol>
+</li>
+<li><strong>标记-清除算法</strong>： 此算法顾名思义，该算法中标记和清除效率都不高，而且清除的内存碎片由于不连续，如果存放大的对象则会导致没有内存存放，进而触发垃圾回收。</li>
+<li><strong>复制算法</strong>：先将内存一分为二，只有一半存放数据，当开始清理内存的时候，将需要的数据复制到另一半内存中，然后统一将另一半清理，这样不会存在碎片了。而且效率也高，就是代价太高了，需要一半的内存空着。</li>
+<li><strong>标记-整理算法</strong>：在清理内存的数据的时候，将需要的数据移动到一起，剩下的不需要的则删除。</li>
+<li><strong>分代收集算法</strong>：根据对象存活周期，分配不同的内存以及使用适合的收集算法。</li>
+</ul>
+<h3 id="垃圾收集器分类"><a href="#垃圾收集器分类" class="headerlink" title="垃圾收集器分类"></a>垃圾收集器分类</h3><ul>
+<li><strong>serial收集器</strong>：</li>
+<li><strong>parnew收集器</strong>：</li>
+<li><strong>parallel scavenge收集器</strong>:</li>
+<li><strong>serial old收集器</strong>:</li>
+<li><strong>paraller old收集器</strong>:</li>
+<li><strong>cms收集器</strong>:</li>
+<li><strong>g1收集器</strong>:</li>
+<li><strong>zgc收集器</strong>：</li>
+</ul>
 
   </article>
   <div class="random-toc-area">
@@ -211,7 +224,7 @@ Jre(java runtime environment)是JRE是指java运行环境，jre里面包含�
   <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
   <div class="random-toc">
     <h2>目录</h2>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#jvm-jdk-jre"><span class="toc-text">jvm,jdk,jre</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载过程"><span class="toc-text">类加载过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载器详解"><span class="toc-text">类加载器详解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GC"><span class="toc-text">GC</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#jvm-jdk-jre"><span class="toc-text">jvm,jdk,jre</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载过程"><span class="toc-text">类加载过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载器详解"><span class="toc-text">类加载器详解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GC"><span class="toc-text">GC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GC中的算法分类"><span class="toc-text">GC中的算法分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#垃圾收集器分类"><span class="toc-text">垃圾收集器分类</span></a></li></ol></li></ol>
   </div>
 </div>
 

@@ -18,9 +18,10 @@
   
   
   
-    <meta name="description" content="记录一个通往架构师路上的点点滴滴">
+    <meta name="description" content="建造者模式参考博客1参考博客2
+建造者模式解析我们首先要知道建造者模式的意义什么？将功能实现分解开，将一个复杂的方法分解成一个一个模块去完成，这样可以灵活的组合在一起，同时隐藏乐实现细节。官方的例子是用汉堡，饮料。参考博客1的实现较为复杂，我来解析一下。首先我们需要知道汉堡，饮料需要包裹这个动作，以及买后的计算总价。但是我们需要知道，饮料分为很多种，有可乐，果汁。。。打包也是不一样的，汉堡需...">
   
-  <title>博主的个人感想 [ 志文的个人博客 ]</title>
+  <title>23中设计模式学习——建造者模式，原型模式 [ 志文的个人博客 ]</title>
   
   
     <link rel="shortcut icon" href="/favicon.ico">
@@ -46,22 +47,13 @@
 </div>
 <div class="side-navigate hide-area">
   
-    <div class="item prev">
-      <a href="/2018/11/20/designpattern/designPattern/">
-        <div class="item-icon"></div>
-      </a>
-      <div class="item-title">
-        23中设计模式学习——单例模式，代理模式
-      </div>
-    </div>
-  
   
     <div class="item next">
-      <a href="/2018/11/20/math/算法学习记录/">
+      <a href="/2018/12/04/designpattern/designPattern2/">
         <div class="item-icon"></div>
       </a>
       <div class="item-title">
-        算法学习记录
+        23中设计模式学习——装饰器模式，享元模式
       </div>
     </div>
   
@@ -122,9 +114,9 @@
       
       
   <article id="post">
-    <h1>博主的个人感想</h1>
+    <h1>23中设计模式学习——建造者模式，原型模式</h1>
     <p class="page-title-sub">
-      <span id="post-title-date">撰写于 2018-11-20</span>
+      <span id="post-title-date">撰写于 2018-12-05</span>
       
         <span id="post-title-updated">修改于 2018-12-06</span>
       
@@ -134,35 +126,34 @@
       
         
         
-        <a href="/categories/index/">index</a>
+        <a href="/categories/设计模式/">设计模式</a>
       
       </span>
       
       
     </p>
     
-    <p>记录一个通往架构师路上的点点滴滴<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
-<hr>
+    <h2 id="建造者模式"><a href="#建造者模式" class="headerlink" title="建造者模式"></a>建造者模式</h2><p><a href="http://www.runoob.com/design-pattern/builder-pattern.html" target="_blank" rel="noopener">参考博客1</a><br><a href="https://blog.csdn.net/u010102390/article/details/80179754" target="_blank" rel="noopener">参考博客2</a></p>
+<h3 id="建造者模式解析"><a href="#建造者模式解析" class="headerlink" title="建造者模式解析"></a>建造者模式解析</h3><p>我们首先要知道建造者模式的意义什么？将功能实现分解开，将一个复杂的方法分解成一个一个模块去完成，这样可以灵活的组合在一起，同时隐藏乐实现细节。<br>官方的例子是用汉堡，饮料。参考博客1的实现较为复杂，我来解析一下。<br>首先我们需要知道汉堡，饮料需要包裹这个动作，以及买后的计算总价。但是我们需要知道，饮料分为很多种，有可乐，果汁。。。打包也是不一样的，汉堡需要使用纸来打包，，饮料需要杯子打包。不同的饮料价格也是不一样的。想想是不是很复杂啊。</p>
+
   </article>
   <div class="random-toc-area">
   <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>
   <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
   <div class="random-toc">
     <h2>目录</h2>
-    
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#建造者模式"><span class="toc-text">建造者模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#建造者模式解析"><span class="toc-text">建造者模式解析</span></a></li></ol></li></ol>
   </div>
 </div>
 
   
 <nav id="pagination">
   
-    <a href="/2018/11/20/designpattern/designPattern/" class="prev">&larr; 上一篇 23中设计模式学习——单例模式，代理模式</a>
-  
 
   
 
   
-    <a href="/2018/11/20/math/算法学习记录/" class="next">下一篇 算法学习记录 &rarr;</a>
+    <a href="/2018/12/04/designpattern/designPattern2/" class="next">下一篇 23中设计模式学习——装饰器模式，享元模式 &rarr;</a>
   
 </nav>
 

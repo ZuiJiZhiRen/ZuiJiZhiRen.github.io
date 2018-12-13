@@ -3,6 +3,23 @@
   
     
     <entry>
+      <title>23中设计模式学习——外观模式、桥接模式</title>
+      <link href="/2018/12/07/designpattern/designPattern4/"/>
+      <url>/2018/12/07/designpattern/designPattern4/</url>
+      
+        <content type="html"><![CDATA[<h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>定义：外观模式（Facade Pattern）隐藏系统的复杂性，并向客户端提供了一个客户端可以访问系统的接口。这种类型的设计模式属于结构型模式，它向现有的系统添加一个接口，来隐藏系统的复杂性。</p><h3 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h3><p>看了外观的代码实现呢，我有点模糊啊，因为我感觉跟建造者模式很是相似。所以在学习外观模式之前可以先来区别下它们。<br><strong>建造者模式</strong>：建造者模式（Builder）<strong><em>,将一个复杂对象的构件与它的表示分离，使得同样的构建过程可以创建不同的表示</em></strong>。如果你需要讲一个复杂对象的构建与它的不是分离，使得同样的构建过程可以创建不同的表示的意图时，我们需要建造者模式，又叫生成器模式。建造者模式可以将一个产品的内部表象与产品的生成过程分割开来，从而可以使一个建造过程生成具有不同的内部表象的产品对象。如果我们用了建造者模式，那么用户就只需指定需要建造的类型就可以得到它们，而具体建造的过程和细节就不需知道啦。<br><strong>外观  模式</strong>：外观模式（Facade），为子系统中的一组接口提供一个一致的界面，此模式定义了一个高层接口，这个接口使得这一子系统更加容易使用。<br><strong>区     别</strong>：思想上外观模式一个是封装一组接口，建造者模式是根据不同的Client,生成不同的需求。方法实现上可能有些许类似，单总体思想上能够区分它的。</p><h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><ol><li>各种形状实体类<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> 设计模式 </category>
+          
+      </categories>
+      
+      
+    </entry>
+    
+    <entry>
       <title>23中设计模式学习——建造者模式，原型模式</title>
       <link href="/2018/12/05/designpattern/designPattern3/"/>
       <url>/2018/12/05/designpattern/designPattern3/</url>

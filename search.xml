@@ -3,6 +3,23 @@
   
     
     <entry>
+      <title>Btree</title>
+      <link href="/2018/12/20/struct/Btree/"/>
+      <url>/2018/12/20/struct/Btree/</url>
+      
+        <content type="html"><![CDATA[<p><a href="http://blog.jobbole.com/111680/#article-comment" title="参考博客" target="_blank" rel="noopener">http://blog.jobbole.com/111680/#article-comment</a><br>B树也是一种用于查找的平衡树，但是它不是二叉树。</p><p>B树的定义：B树（B-tree）是一种树状数据结构，能够用来存储排序后的数据。这种数据结构能够让查找数据、循序存取、插入数据及删除的动作，都在对数时间内完成。B树，概括来说是一个一般化的二叉查找树，可以拥有多于2个子节点。与自平衡二叉查找树不同，B-树为系统最优化大块数据的读和写操作。B-tree算法减少定位记录时所经历的中间过程，从而加快存取速度。这种数据结构常被应用在数据库和文件系统的实作上。</p><p>在B树中查找给定关键字的方法是，首先把根结点取来，在根结点所包含的关键字K1,…,Kn查找给定的关键字（可用顺序查找或二分查找法），若找到等于给定值的关键字，则查找成功；否则，一定可以确定要查找的关键字在Ki与Ki+1之间，Pi为指向子树根节点的指针，此时取指针Pi所指的结点继续查找，直至找到，或指针Pi为空时查找失败。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 数据结构 </category>
+          
+      </categories>
+      
+      
+    </entry>
+    
+    <entry>
       <title>面试总结1</title>
       <link href="/2018/12/14/facetowork/Interview/"/>
       <url>/2018/12/14/facetowork/Interview/</url>
@@ -177,7 +194,7 @@
       <link href="/2018/11/20/index/"/>
       <url>/2018/11/20/index/</url>
       
-        <content type="html"><![CDATA[<p>记录一个通往架构师路上的点点滴滴</p><p>博主姓名：吴志文<br>手 机 号:18855999048<br>状    态:在职<br>求职状态：考虑中<br>原因：公司压力太小，求点刺激。<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p><hr><p>自我介绍：<br>我叫吴志文，现在在安吉加加公司主要是负责java后端开发的，同时也会根据项目需求，跟客户方进行讨论的，以及提供方案。在技术方面的话，现在市场上较为流行的技术，一般都有了解，不过很多时候在技术深度上可能有所欠缺。若果能进入贵公司的话，可以进行这样的努力吧。</p><p>我的缺陷：<br> 可能我的心态有点问题，如果我努力了很久的东西没有被认可，可能心态上会有点爆炸，不过还好，我的恢复能力也是蛮强的，遇挫折我会变得更加坚强。</p>]]></content>
+        <content type="html"><![CDATA[<p>记录一个通往架构师路上的点点滴滴</p><p>博主姓名：吴志文<br>手 机 号:18855999048<br>状    态:在职<br>求职状态：考虑中<br>原因：公司压力太小，求点刺激。<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p><hr>]]></content>
       
       
       <categories>

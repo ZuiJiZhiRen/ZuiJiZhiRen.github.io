@@ -1,0 +1,509 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="文哥">
+  
+  
+  <meta name="keywords" content="java js python">
+  
+  
+  
+    <meta name="description" content="适配器模式看完适配器模式，我个人理解。 错了希望大家指正。我们需要A去完成一个他不可能完成的任务，而B可以很好地完成这个任务，但是A和B没啥关系，幸好A和C很熟，而C和B也是很熟的，这个时候我们通过C进行协调后，完成这个任务。用于java不支持多继承，所以target是接口
+类适配器模式12345678910111213package com.zhiwen.design.adapter;/*...">
+  
+  <title>23中设计模式学习——适配器模式，工厂方法模式 [ 志文的个人博客 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+  <link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+  
+</head>
+
+<body>
+<div id="access_people_count" style="display:none;">
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+</div>
+<div class="side-navigate hide-area">
+  
+    <div class="item prev">
+      <a href="/2018/12/04/designpattern/designPattern2/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        23中设计模式学习——装饰器模式，享元模式
+      </div>
+    </div>
+  
+  
+    <div class="item next">
+      <a href="/2018/11/30/frame/imitate_springMVC/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        简单的模仿SpringMVC
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onclick="openUserCard()">
+          <img id="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+          <div id="homelink">志文的个人博客</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories/index/">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://gitee.com/ZuiJi">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  <article id="post">
+    <h1>23中设计模式学习——适配器模式，工厂方法模式</h1>
+    <p class="page-title-sub">
+      <span id="post-title-date">撰写于 2018-12-03</span>
+      
+        <span id="post-title-updated">修改于 2018-12-04</span>
+      
+      
+      <span id="post-title-categories">分类
+      
+      
+        
+        
+        <a href="/categories/设计模式/">设计模式</a>
+      
+      </span>
+      
+      
+    </p>
+    
+    <h2 id="适配器模式"><a href="#适配器模式" class="headerlink" title="适配器模式"></a>适配器模式</h2><p>看完适配器模式，我个人理解。 错了希望大家指正。<br>我们需要A去完成一个他不可能完成的任务，而B可以很好地完成这个任务，但是A和B没啥关系，幸好A和C很熟，而C和B也是很熟的，这个时候我们通过C进行协调后，完成这个任务。<br>用于java不支持多继承，所以target是接口</p>
+<h3 id="类适配器模式"><a href="#类适配器模式" class="headerlink" title="类适配器模式"></a>类适配器模式</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.adapter;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/3 15:28</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Target</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> void toworkA();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> void toworkB();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 适配对象<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.adapter;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/3 15:30</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Adaptee</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> void toworkB()&#123;</span><br><span class="line">        System.out.println(<span class="string">"B工作很简单"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>适配器<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.adapter;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/3 15:31</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Adapter</span> <span class="keyword">extends</span> <span class="title">Adaptee</span> <span class="keyword">implements</span> <span class="title">Target</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> void toworkA() &#123;</span><br><span class="line"><span class="comment">//        super.toworkB();</span></span><br><span class="line">        System.out.println(<span class="string">"简单的完成任务"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="缺省适配模式"><a href="#缺省适配模式" class="headerlink" title="缺省适配模式"></a>缺省适配模式</h3><p>当我们不准备实现一个接口的所有方法，可以使用缺省适配方法。</p>
+<p>三个work<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.adapter.loseApdater;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/3 15:56</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MutchWayToDo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> void workA();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> void workB();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> void workC();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>抽象方法实现接口<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.adapter.loseApdater;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/3 15:58</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">DoLittleThing</span> <span class="keyword">implements</span> <span class="title">MutchWayToDo</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> void workA() &#123;</span><br><span class="line">        System.out.println(<span class="string">"我只需完成A工作即可"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>适配器的解耦效果很好，但是如果过多的使用适配器，对于开发来说是一个很恐怖的事情，你总是找错真正实现的方法。</p>
+<h2 id="工厂方法模式"><a href="#工厂方法模式" class="headerlink" title="工厂方法模式"></a>工厂方法模式</h2><p>我看了很多介绍，说如果我们直接在方法中new一个对象，如果对象变化了，类名修改了啊。。。会报错，那我就不知道那放在工厂中不会报错了啊？看了那么多我觉得工厂模式就一个作用，隐藏方法的实际作用，调用者不需要知道它具体的实现。而且工厂方法模式实现起来很麻烦，我没有觉得他的好处在哪里。不过水平有限，希望在以后的日子里能真正领悟它的作用吧。我们还是来具体实现下看看他的用法。</p>
+<h3 id="简单的工厂模式"><a href="#简单的工厂模式" class="headerlink" title="简单的工厂模式"></a>简单的工厂模式</h3><p>工厂模式很容易理解，就是在工厂里帮我们加工我们需要的东西，不需要自己动手了。先实现一个简单的工厂模式，简单并不是说实现简单。</p>
+<ol>
+<li>定义运算接口</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.factory;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/4 09:48</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Arithmetic</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> int setNumber(int a, int b);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>实现加减乘除</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.factory;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/4 09:51</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Add</span> <span class="keyword">implements</span> <span class="title">Arithmetic</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> int setNumber(int a, int b) &#123;</span><br><span class="line">        <span class="keyword">return</span> a + b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">。。。。。。。。。。。。。一次实现，代码就不粘了</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>盖工厂</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.factory.easy;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.factory.Add;</span><br><span class="line">import com.zhiwen.design.factory.Arithmetic;</span><br><span class="line">import com.zhiwen.design.factory.Delete;</span><br><span class="line">import com.zhiwen.design.factory.Divide;</span><br><span class="line">import com.zhiwen.design.factory.Multiply;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/4 09:53</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EasyFactory</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Arithmetic getWayToArith(char ways) &#123;</span><br><span class="line">        <span class="comment">//jdk8不支持字符串</span></span><br><span class="line">        <span class="keyword">switch</span> (ways) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'+'</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Add();</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'-'</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Delete();</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'*'</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Multiply();</span><br><span class="line">            <span class="keyword">case</span> <span class="string">'/'</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Divide();</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>实现功能</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.factory.easy;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.factory.Arithmetic;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/4 10:07</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestFacory</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> void main(String[] args) &#123;</span><br><span class="line">        Arithmetic add = EasyFactory.getWayToArith(<span class="string">'+'</span>);</span><br><span class="line">        System.out.println(<span class="string">"add:"</span>+add.setNumber(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">        Arithmetic delete = EasyFactory.getWayToArith(<span class="string">'-'</span>);</span><br><span class="line">        System.out.println(<span class="string">"delete:"</span>+delete.setNumber(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">        Arithmetic mul = EasyFactory.getWayToArith(<span class="string">'*'</span>);</span><br><span class="line">        System.out.println(<span class="string">"mul:"</span>+mul.setNumber(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">        Arithmetic divide = EasyFactory.getWayToArith(<span class="string">'/'</span>);</span><br><span class="line">        System.out.println(<span class="string">"divide"</span>+divide.setNumber(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到，我们根据加减乘除预算符号就可以获取对象，但是如果我们需要一个复杂的运算，这时我们需要重新修改工厂代码，我们要知道设计模式必须符合一个原则 <strong>开闭原则</strong>，什么是开闭原则，提供对外的扩展，但是源码是不允许修改的。很显然我们一旦添加新的运算方式，就需要在工厂添加代码。所以简单的工厂模式并不是工厂模式。那么我们怎么设计工厂模式呢？我们将每一个实现运算接口的类都生成一个工厂，这样每一次添加一个运算方式，都只需要添加一个工厂就可以了，而不需要修改工厂类。很显然我们可以看出来这样的实现很复杂。所以我认为他的作用是隐藏代码的运行方式，而不是解耦什么的。<br>我们看下真正的工厂模式代码。</p>
+<h3 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h3><ol>
+<li>创建工厂接口</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.factory.complex;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.factory.Arithmetic;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/4 10:30</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ComplexFactory</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Arithmetic getArithmetic();</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>实现工厂接口</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.factory.complex;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.factory.Add;</span><br><span class="line">import com.zhiwen.design.factory.Arithmetic;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/4 10:29</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AddFactory</span> <span class="keyword">implements</span> <span class="title">ComplexFactory</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Arithmetic getArithmetic() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Add();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">。。。。。。加减乘除依次创建工厂</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>实现效果</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.factory.complex;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.factory.Add;</span><br><span class="line">import com.zhiwen.design.factory.Arithmetic;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/4 10:33</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestFactory</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException &#123;</span><br><span class="line">        <span class="comment">//反射获取</span></span><br><span class="line">        ComplexFactory add = (ComplexFactory) Class.forName("com.zhiwen.design.factory.complex.AddFactory").newInstance();</span><br><span class="line">        ComplexFactory del = (ComplexFactory) Class.forName("com.zhiwen.design.factory.complex.DeleteFactory").newInstance();</span><br><span class="line">        ComplexFactory div = (ComplexFactory) Class.forName("com.zhiwen.design.factory.complex.DivideFactory").newInstance();</span><br><span class="line">        ComplexFactory mul = (ComplexFactory) Class.forName("com.zhiwen.design.factory.complex.MultiplyFactory").newInstance();</span><br><span class="line">        <span class="comment">//工厂创建对象</span></span><br><span class="line">        Arithmetic arithmeticAdd = add.getArithmetic();</span><br><span class="line">        Arithmetic arithmeticDel = del.getArithmetic();</span><br><span class="line">        Arithmetic arithmeticDiv = div.getArithmetic();</span><br><span class="line">        Arithmetic arithmeticMul = mul.getArithmetic();</span><br><span class="line">        <span class="comment">//打印结果</span></span><br><span class="line">        System.out.println(arithmeticAdd.setNumber(<span class="number">1</span>,<span class="number">2</span>));</span><br><span class="line">        System.out.println(arithmeticDel.setNumber(<span class="number">1</span>,<span class="number">2</span>));</span><br><span class="line">        System.out.println(arithmeticDiv.setNumber(<span class="number">1</span>,<span class="number">2</span>));</span><br><span class="line">        System.out.println(arithmeticMul.setNumber(<span class="number">1</span>,<span class="number">2</span>));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们看出来，如果只是一个小项目的，我们使用工厂的话，一般会使用简单工厂的方式进行，但是如果是一个大项目的话，工厂模式还是主流的。我们了解spring的话，对他的依赖注入(IOC)了解的话，它也提供了静态工厂模式和实例工厂模式，它们的区别在于加载顺序。</p>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
+  <div class="random-toc">
+    <h2>目录</h2>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#适配器模式"><span class="toc-text">适配器模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#类适配器模式"><span class="toc-text">类适配器模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#缺省适配模式"><span class="toc-text">缺省适配模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#工厂方法模式"><span class="toc-text">工厂方法模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#简单的工厂模式"><span class="toc-text">简单的工厂模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#工厂模式"><span class="toc-text">工厂模式</span></a></li></ol></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+    <a href="/2018/12/04/designpattern/designPattern2/" class="prev">&larr; 上一篇 23中设计模式学习——装饰器模式，享元模式</a>
+  
+
+  
+
+  
+    <a href="/2018/11/30/frame/imitate_springMVC/" class="next">下一篇 简单的模仿SpringMVC &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+  
+  <style>
+    .donation {
+      width: 100%;
+      margin-top: 2rem;
+    }
+    .donation .text[name="zhifubao"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .donation .text[name="weixin"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding-left:546px; 
+    }
+    .donation .text:hover {
+      color: rgb(63,134,181);
+    }
+    .donation .img-box {
+      transition: all .3s;
+      width: 0;
+      height: 0;
+      margin: 1rem auto;
+      overflow: hidden;
+    }
+    .donation .img-box img {
+      width: 100%;
+      height: 100%;
+    }
+    .donation #donation {
+      display: none;
+    }
+    .donation #donation:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+    .donation #donation1 {
+      display: none;
+    }
+    .donation #donation1:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+  </style>
+  <div class="donation">
+  如果你觉得文章对你有帮助，并且钱多的没地方花的时候，点这里～
+    <label class="text" name="zhifubao" for="donation">
+      支付宝
+    </label>
+    <input type="checkbox" name="donation" id="donation">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation.jpg" alt="donation">
+    </div>
+    <label class="text" name="weixin" for="donation1">
+      微信
+    </label>
+    <input type="checkbox" name="donation" id="donation1">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation1.jpg" alt="donation">
+    </div>
+  </div>
+
+
+  
+
+
+<style>
+	gitment_title:hover {
+	color: #fff;
+	background: #0a9caf;
+	background-image: initial;
+	background-position-x: initial;
+	background-position-y: initial;
+	background-size: initial;
+	background-repeat-x: initial;
+	background-repeat-y: initial;
+	background-attachment: initial;
+	background-origin: initial;
+	background-clip: initial;
+	background-color: rgb(10, 156, 175);
+	}
+	.gitment_title {
+	border: 1px solid #0a9caf;
+	border-top-color: rgb(10, 156, 175);
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-right-color: rgb(10, 156, 175);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-bottom-color: rgb(10, 156, 175);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(10, 156, 175);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	border-radius: 4px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	}
+	.gitment_title {
+	display: inline-block;
+	padding: 0 15px;
+	padding-top: 0px;
+	padding-right: 15px;
+	padding-bottom: 0px;
+	padding-left: 15px;
+	color: #0a9caf;
+	cursor: pointer;
+	font-size: 14px;
+	}
+</style>
+<div onclick="showGitment()" id="gitment_title" class="gitment_title">显示 Gitment 评论</div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+function showGitment() {
+$("#gitment_title").attr("style", "display:none");
+$("#gitalk-container").attr("style", "").addClass("gitment_container");
+var gitment = new Gitalk({
+id: hex_md5(window.location.pathname),
+owner: 'ZuiJiZhiRen',
+repo: 'comment',
+clientID: '26b1ecdcbd2a38769dec',
+clientSecret: 'b1848c935f489b3ce679458d801a3d9c1418ce98',
+admin: 'ZuiJiZhiRen',
+distractionFreeMode: 'true'
+});
+gitment.render('gitalk-container');
+}
+</script>
+
+
+ 
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by 文哥 using
+      <a href="http://hexo.io">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+    <p id="description">java springboot springCloud 。。。。</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://gitee.com/ZuiJi">
+        
+          GitHub
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+    <script src="/js/md5.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+    
+      backgroundImages.push('https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg');
+    
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":28};
+var unsplashConfig = {"gravity":"west"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+

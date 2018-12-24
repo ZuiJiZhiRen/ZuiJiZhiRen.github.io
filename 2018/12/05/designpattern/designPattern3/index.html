@@ -1,0 +1,499 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="文哥">
+  
+  
+  <meta name="keywords" content="java js python">
+  
+  
+  
+    <meta name="description" content="建造者模式参考博客1参考博客2
+建造者模式解析我们首先要知道建造者模式的意义什么？使用多个简单的对象一步一步构建成一个复杂的对象。参考博客1的例子是用汉堡，饮料。参考博客1的实现较为复杂，我来解析一下。首先我们需要知道汉堡，饮料需要包裹这个动作，以及买后的计算总价。但是我们需要知道，饮料分为很多种，有可乐，果汁。。。打包也是不一样的，汉堡需要使用纸来打包，，饮料需要杯子打包。不同的饮料价格也...">
+  
+  <title>23中设计模式学习——建造者模式，原型模式 [ 志文的个人博客 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+  <link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+  
+</head>
+
+<body>
+<div id="access_people_count" style="display:none;">
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+</div>
+<div class="side-navigate hide-area">
+  
+    <div class="item prev">
+      <a href="/2018/12/07/designpattern/designPattern4/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        23中设计模式学习——外观模式、桥接模式
+      </div>
+    </div>
+  
+  
+    <div class="item next">
+      <a href="/2018/12/04/designpattern/designPattern2/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        23中设计模式学习——装饰器模式，享元模式
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onclick="openUserCard()">
+          <img id="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+          <div id="homelink">志文的个人博客</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories/index/">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://gitee.com/ZuiJi">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  <article id="post">
+    <h1>23中设计模式学习——建造者模式，原型模式</h1>
+    <p class="page-title-sub">
+      <span id="post-title-date">撰写于 2018-12-05</span>
+      
+        <span id="post-title-updated">修改于 2018-12-06</span>
+      
+      
+      <span id="post-title-categories">分类
+      
+      
+        
+        
+        <a href="/categories/设计模式/">设计模式</a>
+      
+      </span>
+      
+      
+    </p>
+    
+    <h2 id="建造者模式"><a href="#建造者模式" class="headerlink" title="建造者模式"></a>建造者模式</h2><p><a href="http://www.runoob.com/design-pattern/builder-pattern.html" target="_blank" rel="noopener">参考博客1</a><br><a href="https://blog.csdn.net/u010102390/article/details/80179754" target="_blank" rel="noopener">参考博客2</a></p>
+<h3 id="建造者模式解析"><a href="#建造者模式解析" class="headerlink" title="建造者模式解析"></a>建造者模式解析</h3><p>我们首先要知道建造者模式的意义什么？使用多个简单的对象一步一步构建成一个复杂的对象。<br>参考博客1的例子是用汉堡，饮料。参考博客1的实现较为复杂，我来解析一下。<br>首先我们需要知道汉堡，饮料需要包裹这个动作，以及买后的计算总价。但是我们需要知道，饮料分为很多种，有可乐，果汁。。。打包也是不一样的，汉堡需要使用纸来打包，，饮料需要杯子打包。不同的饮料价格也是不一样的。想想是不是很复杂啊。我们一步一步实现</p>
+<h3 id="打包"><a href="#打包" class="headerlink" title="打包"></a>打包</h3><p>不同的食物打包方式不同，所以先定义接口，再实现方法。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/5 17:07</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 打包</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Pack</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> void packing();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/5 17:07</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:汉堡打包</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HanbagerPack</span> <span class="keyword">implements</span> <span class="title">Pack</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> void packing() &#123;</span><br><span class="line">        System.out.println(<span class="string">"汉堡打包"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/5 17:09</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 饮料的基本属性</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">DrinkItem</span> <span class="keyword">implements</span> <span class="title">Item</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Pack packing() &#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">new</span> DrinkPack();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="汉堡，饮料"><a href="#汉堡，饮料" class="headerlink" title="汉堡，饮料"></a>汉堡，饮料</h3><p>创建一个接口，接口中有它们的基础属性,然后实现他们的接口<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/5 17:05</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 先定义它所需要的属性</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Item</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> Pack packing();</span><br><span class="line">    <span class="keyword">public</span> int price();</span><br><span class="line">    <span class="keyword">public</span> String name();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/5 17:09</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 饮料的基本属性</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">DrinkItem</span> <span class="keyword">implements</span> <span class="title">Item</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Pack packing() &#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">new</span> DrinkPack();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/5 17:09</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 汉堡的基本属性</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">HanbagerItem</span> <span class="keyword">implements</span> <span class="title">Item</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Pack packing() &#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">new</span> HanbagerPack();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="不同种类的汉堡和饮料"><a href="#不同种类的汉堡和饮料" class="headerlink" title="不同种类的汉堡和饮料"></a>不同种类的汉堡和饮料</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColorDrink</span> <span class="keyword">extends</span> <span class="title">DrinkItem</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> int price() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">50</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String name() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Color Drink"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColorDrink1</span> <span class="keyword">extends</span> <span class="title">DrinkItem</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> int price() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">34</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String name() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Color Drink1111111"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HugeHanbager</span> <span class="keyword">extends</span> <span class="title">HanbagerItem</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> int price() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">69</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String name() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Huge Hanbager"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HugeHanbager1</span> <span class="keyword">extends</span> <span class="title">HanbagerItem</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> int price() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">32</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String name() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Huge Hanbager1111"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="机器计算账单"><a href="#机器计算账单" class="headerlink" title="机器计算账单"></a>机器计算账单</h3><p>如果客户买了食物，我们需要打印账单，以及收账<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.build.demo2;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.build.demo2.item.Item;</span><br><span class="line"></span><br><span class="line">import java.util.ArrayList;</span><br><span class="line">import java.util.<span class="keyword">List</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/6 09:28</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 菜单，并且记录</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Meal</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">List</span>&lt;Item&gt; meals = <span class="keyword">new</span> ArrayList&lt;Item&gt;();</span><br><span class="line">    <span class="comment">//添加食品</span></span><br><span class="line">    <span class="keyword">public</span> void additem(Item item) &#123;</span><br><span class="line">        meals.add(item);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//计算总价</span></span><br><span class="line">    <span class="keyword">public</span> int getPrice() &#123;</span><br><span class="line">        int allprice = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (Item meal : meals) &#123;</span><br><span class="line">            allprice += meal.price();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> allprice;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//账单明细</span></span><br><span class="line">    <span class="keyword">public</span> void showItem()&#123;</span><br><span class="line">        <span class="keyword">for</span> (Item meal : meals) &#123;</span><br><span class="line">            System.out.println(<span class="string">"食品名称"</span>+meal.name());</span><br><span class="line">            System.out.println(<span class="string">"食品价格"</span>+meal.price());</span><br><span class="line">            meal.packing().packing();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="收银员"><a href="#收银员" class="headerlink" title="收银员"></a>收银员</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.build.demo2;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.build.demo2.item.Item;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/6 09:50</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 这个就是建者</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MealBuild</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Meal cashRegister(Item... items)&#123;</span><br><span class="line">        Meal meal = <span class="keyword">new</span> Meal();</span><br><span class="line">        <span class="keyword">for</span> (Item item : items) &#123;</span><br><span class="line">            meal.additem(item);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> meal;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.build.demo2;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.build.demo2.foodclass.ColorDrink;</span><br><span class="line">import com.zhiwen.design.build.demo2.foodclass.ColorDrink1;</span><br><span class="line">import com.zhiwen.design.build.demo2.foodclass.HugeHanbager;</span><br><span class="line">import com.zhiwen.design.build.demo2.foodclass.HugeHanbager1;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Auther</span>: wuzhiwen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span>: 2018/12/6 10:05</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestBuild</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> void main(String[] args) &#123;</span><br><span class="line">        <span class="comment">//首先先购买食物</span></span><br><span class="line">        HugeHanbager hugeHanbager = <span class="keyword">new</span> HugeHanbager();</span><br><span class="line">        HugeHanbager1 hugeHanbager1 = <span class="keyword">new</span> HugeHanbager1();</span><br><span class="line">        ColorDrink colorDrink = <span class="keyword">new</span> ColorDrink();</span><br><span class="line">        ColorDrink1 colorDrink1 = <span class="keyword">new</span> ColorDrink1();</span><br><span class="line">        <span class="comment">//交给建造者处理</span></span><br><span class="line">        MealBuild mealBuild = <span class="keyword">new</span> MealBuild();</span><br><span class="line">        Meal meal = mealBuild.cashRegister(hugeHanbager, hugeHanbager1, colorDrink, colorDrink1);</span><br><span class="line">        <span class="comment">//查看处理结果</span></span><br><span class="line">        meal.showItem();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果大家自己敲完了的话，会有种感觉很复杂啊，一层套一层的很是烦人。我们想一下，如果我们购买食物会有各种优惠，这个时候，mealBuild可以进行各种组合，匹配合适的优惠，是不是很方便。当然对我们开发人员就是很难受的事情，那些复杂的实现都是我们进行开发的。</p>
+<h2 id="原型模式"><a href="#原型模式" class="headerlink" title="原型模式"></a>原型模式</h2><p><a href="http://www.runoob.com/design-pattern/prototype-pattern.html" target="_blank" rel="noopener">参考博客</a></p>
+<h3 id="clone"><a href="#clone" class="headerlink" title="clone"></a>clone</h3><p><hr><br>想学习原型模式，我们需要先把clone这个方法了解一下。<a href="https://www.cnblogs.com/nickhan/p/8569329.html" target="_blank" rel="noopener">clone方法的解析</a>，了解了clone,之后我们再来了解原型模式。<br>clone克隆的对象中，基本数据类型是复制的，而对象则是复制引用。继续我们的原型模式。</p>
+<h3 id="存在的目的"><a href="#存在的目的" class="headerlink" title="存在的目的"></a>存在的目的</h3><p><hr><br> 原型，原型，就是copy。我们知道一点，如果对象中有数据的话，我们new一个对象时很慢的，而clone效率相对就很高了。<br><strong>存在这样的一个情况，一个对象需要在一个高代价的数据库操作之后被创建。我们可以缓存该对象，在下一个请求时返回它的克隆，在需要的时候更新数据库，以此来减少数据库调用。</strong></p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><ol>
+<li>创建一个shape抽象类并且实现它的clone</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.prototypePattern.shape;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Shape</span> <span class="keyword">implements</span> <span class="title">Cloneable</span> </span>&#123;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">private</span> String id;</span><br><span class="line">   <span class="keyword">protected</span> String type;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">abstract</span> void draw();</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">public</span> String getType()&#123;</span><br><span class="line">      <span class="keyword">return</span> type;</span><br><span class="line">   &#125;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">public</span> String getId() &#123;</span><br><span class="line">      <span class="keyword">return</span> id;</span><br><span class="line">   &#125;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">public</span> void setId(String id) &#123;</span><br><span class="line">      this.id = id;</span><br><span class="line">   &#125;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">public</span> Object <span class="keyword">clone</span>() &#123;</span><br><span class="line">      Object <span class="keyword">clone</span> = <span class="keyword">null</span>;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">         <span class="keyword">clone</span> = super.<span class="keyword">clone</span>();</span><br><span class="line">      &#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">         e.printStackTrace();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">clone</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>继承shape类，生成圆形，方形等方法</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Rectangle</span> <span class="keyword">extends</span> <span class="title">Shape</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">   <span class="keyword">public</span> Rectangle()&#123;</span><br><span class="line">     type = <span class="string">"Rectangle"</span>;</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   @Override</span><br><span class="line">   <span class="keyword">public</span> void draw() &#123;</span><br><span class="line">      System.out.println(<span class="string">"Inside Rectangle::draw() method."</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line">其他的以此类推</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>存放到catch中，获取clone的对象</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.prototypePattern.catchs;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.prototypePattern.shape.Circle;</span><br><span class="line">import com.zhiwen.design.prototypePattern.shape.Rectangle;</span><br><span class="line">import com.zhiwen.design.prototypePattern.shape.Shape;</span><br><span class="line">import com.zhiwen.design.prototypePattern.shape.Square;</span><br><span class="line"></span><br><span class="line">import java.util.Hashtable;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ShapeCache</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">   <span class="keyword">private</span> <span class="keyword">static</span> Hashtable&lt;String, Shape&gt; shapeMap </span><br><span class="line">      = <span class="keyword">new</span> Hashtable&lt;String, Shape&gt;();</span><br><span class="line"> </span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">static</span> Shape getShape(String shapeId) &#123;</span><br><span class="line">      Shape cachedShape = shapeMap.get(shapeId);</span><br><span class="line">      <span class="keyword">return</span> (Shape) cachedShape.<span class="keyword">clone</span>();</span><br><span class="line">   &#125;</span><br><span class="line"> </span><br><span class="line">   <span class="comment">// 对每种形状都运行数据库查询，并创建该形状</span></span><br><span class="line">   <span class="comment">// shapeMap.put(shapeKey, shape);</span></span><br><span class="line">   <span class="comment">// 例如，我们要添加三种形状</span></span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">static</span> void loadCache() &#123;</span><br><span class="line">      Circle circle = <span class="keyword">new</span> Circle();</span><br><span class="line">      circle.setId(<span class="string">"1"</span>);</span><br><span class="line">      shapeMap.put(circle.getId(),circle);</span><br><span class="line"> </span><br><span class="line">      Square square = <span class="keyword">new</span> Square();</span><br><span class="line">      square.setId(<span class="string">"2"</span>);</span><br><span class="line">      shapeMap.put(square.getId(),square);</span><br><span class="line"> </span><br><span class="line">      Rectangle rectangle = <span class="keyword">new</span> Rectangle();</span><br><span class="line">      rectangle.setId(<span class="string">"3"</span>);</span><br><span class="line">      shapeMap.put(rectangle.getId(),rectangle);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>测试</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.design.prototypePattern;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.design.prototypePattern.catchs.ShapeCache;</span><br><span class="line">import com.zhiwen.design.prototypePattern.shape.Shape;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrototypePatternDemo</span> </span>&#123;</span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">static</span> void main(String[] args) &#123;</span><br><span class="line">      ShapeCache.loadCache();</span><br><span class="line"> </span><br><span class="line">      Shape clonedShape = (Shape) ShapeCache.getShape(<span class="string">"1"</span>);</span><br><span class="line">      System.out.println(<span class="string">"Shape : "</span> + clonedShape.getType());        </span><br><span class="line"> </span><br><span class="line">      Shape clonedShape2 = (Shape) ShapeCache.getShape(<span class="string">"2"</span>);</span><br><span class="line">      System.out.println(<span class="string">"Shape : "</span> + clonedShape2.getType());        </span><br><span class="line"> </span><br><span class="line">      Shape clonedShape3 = (Shape) ShapeCache.getShape(<span class="string">"3"</span>);</span><br><span class="line">      System.out.println(<span class="string">"Shape : "</span> + clonedShape3.getType());        </span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>优点： 1、性能提高。 2、逃避构造函数的约束。</p>
+<p>缺点： 1、配备克隆方法需要对类的功能进行通盘考虑，这对于全新的类不是很难，但对于已有的类不一定很容易，特别当一个类引用不支持串行化的间接对象，或者引用含有循环结构的时候。 2、必须实现 Cloneable 接口。</p>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
+  <div class="random-toc">
+    <h2>目录</h2>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#建造者模式"><span class="toc-text">建造者模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#建造者模式解析"><span class="toc-text">建造者模式解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#打包"><span class="toc-text">打包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#汉堡，饮料"><span class="toc-text">汉堡，饮料</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#不同种类的汉堡和饮料"><span class="toc-text">不同种类的汉堡和饮料</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#机器计算账单"><span class="toc-text">机器计算账单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#收银员"><span class="toc-text">收银员</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试"><span class="toc-text">测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#原型模式"><span class="toc-text">原型模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#clone"><span class="toc-text">clone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#存在的目的"><span class="toc-text">存在的目的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码实现"><span class="toc-text">代码实现</span></a></li></ol></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+    <a href="/2018/12/07/designpattern/designPattern4/" class="prev">&larr; 上一篇 23中设计模式学习——外观模式、桥接模式</a>
+  
+
+  
+
+  
+    <a href="/2018/12/04/designpattern/designPattern2/" class="next">下一篇 23中设计模式学习——装饰器模式，享元模式 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+  
+  <style>
+    .donation {
+      width: 100%;
+      margin-top: 2rem;
+    }
+    .donation .text[name="zhifubao"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .donation .text[name="weixin"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding-left:546px; 
+    }
+    .donation .text:hover {
+      color: rgb(63,134,181);
+    }
+    .donation .img-box {
+      transition: all .3s;
+      width: 0;
+      height: 0;
+      margin: 1rem auto;
+      overflow: hidden;
+    }
+    .donation .img-box img {
+      width: 100%;
+      height: 100%;
+    }
+    .donation #donation {
+      display: none;
+    }
+    .donation #donation:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+    .donation #donation1 {
+      display: none;
+    }
+    .donation #donation1:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+  </style>
+  <div class="donation">
+  如果你觉得文章对你有帮助，并且钱多的没地方花的时候，点这里～
+    <label class="text" name="zhifubao" for="donation">
+      支付宝
+    </label>
+    <input type="checkbox" name="donation" id="donation">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation.jpg" alt="donation">
+    </div>
+    <label class="text" name="weixin" for="donation1">
+      微信
+    </label>
+    <input type="checkbox" name="donation" id="donation1">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation1.jpg" alt="donation">
+    </div>
+  </div>
+
+
+  
+
+
+<style>
+	gitment_title:hover {
+	color: #fff;
+	background: #0a9caf;
+	background-image: initial;
+	background-position-x: initial;
+	background-position-y: initial;
+	background-size: initial;
+	background-repeat-x: initial;
+	background-repeat-y: initial;
+	background-attachment: initial;
+	background-origin: initial;
+	background-clip: initial;
+	background-color: rgb(10, 156, 175);
+	}
+	.gitment_title {
+	border: 1px solid #0a9caf;
+	border-top-color: rgb(10, 156, 175);
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-right-color: rgb(10, 156, 175);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-bottom-color: rgb(10, 156, 175);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(10, 156, 175);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	border-radius: 4px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	}
+	.gitment_title {
+	display: inline-block;
+	padding: 0 15px;
+	padding-top: 0px;
+	padding-right: 15px;
+	padding-bottom: 0px;
+	padding-left: 15px;
+	color: #0a9caf;
+	cursor: pointer;
+	font-size: 14px;
+	}
+</style>
+<div onclick="showGitment()" id="gitment_title" class="gitment_title">显示 Gitment 评论</div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+function showGitment() {
+$("#gitment_title").attr("style", "display:none");
+$("#gitalk-container").attr("style", "").addClass("gitment_container");
+var gitment = new Gitalk({
+id: hex_md5(window.location.pathname),
+owner: 'ZuiJiZhiRen',
+repo: 'comment',
+clientID: '26b1ecdcbd2a38769dec',
+clientSecret: 'b1848c935f489b3ce679458d801a3d9c1418ce98',
+admin: 'ZuiJiZhiRen',
+distractionFreeMode: 'true'
+});
+gitment.render('gitalk-container');
+}
+</script>
+
+
+ 
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by 文哥 using
+      <a href="http://hexo.io">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+    <p id="description">java springboot springCloud 。。。。</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://gitee.com/ZuiJi">
+        
+          GitHub
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+    <script src="/js/md5.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+    
+      backgroundImages.push('https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg');
+    
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":28};
+var unsplashConfig = {"gravity":"west"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+

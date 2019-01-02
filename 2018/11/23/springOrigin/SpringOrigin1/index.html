@@ -18,7 +18,9 @@
   
   
   
-    <meta name="description" content="java springboot springCloud 。。。。">
+    <meta name="description" content="了解它得先学会使用
+spring是什么：    轻量级：    ioc(di):    aop:    一站式：spring模块：    。。：spring的bean配置：    IOC:反转控住    DI:IOC的另一种表述方式：即组件以一些预定好的方式（列如：setter方法）接收来自如容器的资源注入。相对IOC而言，这种表述更直接。
+spring的bean生成方式：    1.bea...">
   
   <title>spring源码解析笔记一 [ 志文的个人博客 ]</title>
   
@@ -126,7 +128,7 @@
     <p class="page-title-sub">
       <span id="post-title-date">撰写于 2018-11-23</span>
       
-        <span id="post-title-updated">修改于 2018-11-23</span>
+        <span id="post-title-updated">修改于 2018-12-26</span>
       
       
       <span id="post-title-categories">分类
@@ -141,7 +143,23 @@
       
     </p>
     
-    
+    <p>了解它得先学会使用</p>
+<p>spring是什么：<br>    轻量级：<br>    ioc(di):<br>    aop:<br>    一站式：<br>spring模块：<br>    。。：<br>spring的bean配置：<br>    IOC:反转控住<br>    DI:IOC的另一种表述方式：即组件以一些预定好的方式（列如：setter方法）接收来自如容器的资源注入。相对IOC而言，这种表述更直接。</p>
+<p>spring的bean生成方式：<br>    1.bean的全类名<br>    2.工厂方法（静态工厂方法和实例工厂方法）<br>    3.factoryBean</p>
+<p>属性的注入：<br>    属性注入：通过setter方法<br>    构造器注入：<construct-arg>:如果包含特殊字符可以使用&lt;![CDATA[]]&gt;<br>    工厂方法：</construct-arg></p>
+<p>bean之间的关系：<br>    允许bean之间继承：</p>
+<p>springSPL：</p>
+<p>spring注解：<br>    Controller:<br>    Service:<br>    Resposity:<br>    Component:</p>
+<pre><code>Autowired:如果存在实例名多个需要搭配Qualifier指定实例名
+Qualifier:指定名称
+
+Resource:相当于Autowired和Qualifier一起
+</code></pre><p>使用注解需要扫描包：</p>
+<p>spring泛型依赖注入：</p>
+<p>springAOP<br>    before:<br>    after:<br>    around:<br>    优先级：order 值越小越高</p>
+<p>spring事物：<br>    配事物管理器：<br>    事物的传播属性7类：当一个事物方法呗另一个事物方法调用。<br>        required：<br>        required_new:<br>    事物的隔离级别：<br>        脏读：<br>        不可重复读：<br>        幻读：<br>    对事物回滚或者不回滚：</p>
+<p>spring的Web应用</p>
+
   </article>
   <div class="random-toc-area">
   <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>

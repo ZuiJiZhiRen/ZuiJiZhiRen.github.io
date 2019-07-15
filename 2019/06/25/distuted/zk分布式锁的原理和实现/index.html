@@ -1,0 +1,518 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="文哥">
+  
+  
+  <meta name="keywords" content="java js python">
+  
+  
+  
+    <meta name="description" content="参考博客1注重原理分析参考博客2代码实现参考博客写的很好，我现在肯定没有他的水平高，不过我也需要练习，顺便记录下来，所以希望大家见谅，我会尽量优化和补全他们的代码。
+通过对redis分布式锁的实现，我已经可以很清楚的知道分布式锁的实现需要满足以下几点：
+
+必须是可以锁住，不会出现并发。
+不会出现死锁。
+不会丢失锁其他的要求都是细节上的打磨。我们围绕着这几个点来说明下为什么zk可以实现分布式锁...">
+  
+  <title>zk分布式锁的原理和实现 [ 志文的个人博客 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+  <link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+  
+</head>
+
+<body>
+<div id="access_people_count" style="display:none;">
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+</div>
+<div class="side-navigate hide-area">
+  
+    <div class="item prev">
+      <a href="/2019/06/25/distuted/分布式锁实现方案/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        分布式锁的实现方案
+      </div>
+    </div>
+  
+  
+    <div class="item next">
+      <a href="/2019/06/25/distuted/redis分布式锁/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        redis实现分布式锁实现代码以及原理分析
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onclick="openUserCard()">
+          <img id="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+          <div id="homelink">志文的个人博客</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories/index/">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://gitee.com/ZuiJi">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  <article id="post">
+    <h1>zk分布式锁的原理和实现</h1>
+    <p class="page-title-sub">
+      <span id="post-title-date">撰写于 2019-06-25</span>
+      
+        <span id="post-title-updated">修改于 2019-06-25</span>
+      
+      
+      <span id="post-title-categories">分类
+      
+      
+        
+        
+        <a href="/categories/分布式锁/">分布式锁</a>
+      
+      </span>
+      
+      
+    </p>
+    
+    <p><a href="https://blog.csdn.net/qiangcuo6087/article/details/79067136" target="_blank" rel="noopener">参考博客1注重原理分析</a><br><a href="https://www.cnblogs.com/liuyang0/p/6800538.html" target="_blank" rel="noopener">参考博客2代码实现</a><br>参考博客写的很好，我现在肯定没有他的水平高，不过我也需要练习，顺便记录下来，所以希望大家见谅，我会尽量优化和补全他们的代码。</p>
+<p>通过对redis分布式锁的实现，我已经可以很清楚的知道分布式锁的实现需要满足以下几点：</p>
+<ol>
+<li>必须是可以锁住，不会出现并发。</li>
+<li>不会出现死锁。</li>
+<li><p>不会丢失锁<br>其他的要求都是细节上的打磨。我们围绕着这几个点来说明下为什么zk可以实现分布式锁。</p>
+</li>
+<li><p>zookeeper需要以集群形态来部署来保证它的高可用。</p>
+</li>
+<li>zookeeper可以跟客户端创建临时的节点，<strong>直到会话结束或者超时或者客户端宕机(心跳检查失败)，节点会被删除。</strong></li>
+<li>节点的创建可以使有序的，在一个父节点下创建子节点，只要指明是有序的，那么zk创建子节点时会添加节点序号。</li>
+<li>事件的监听，当我们读取节点时可以对节点设置监听，而且<strong>读取节点和设置监听是原子性的操作</strong>。<br>以上几点是zk符合作为实现分布式锁的原因。</li>
+</ol>
+<p>zookeeper能够实现锁的原理流程<br>假设zookeeper中根节点是/lock</p>
+<ol>
+<li>第一个客户端连接zookeeper并创建有序节点/lock/node-0000000,第二个客户端连接zookeeper创建有序节点/lock/node-0000001，以此类推，</li>
+<li>客户端获取节点列表，判断自己的节点是否是最小的，如果是最小的，则获取锁，如果不是最小的则设置监听，直到节点变更后重复此步骤。</li>
+<li>客户端获取锁后执行业务代码</li>
+<li>然后删除节点</li>
+</ol>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p>1.设置异常</p>
+<hr>
+
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">	package com.zhiwen.exception;</span><br><span class="line"></span><br><span class="line">public class LockException extends RuntimeException &#123;</span><br><span class="line">        private static final long serialVersionUID = 1L;</span><br><span class="line">        public LockException(String e)&#123;</span><br><span class="line">            super(e);</span><br><span class="line">        &#125;</span><br><span class="line">        public LockException(Exception e)&#123;</span><br><span class="line">            super(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>2.实现DistributedLock </p>
+<hr>
+
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.util;</span><br><span class="line">import com.zhiwen.exception.LockException;</span><br><span class="line">import org.apache.zookeeper.CreateMode;</span><br><span class="line">import org.apache.zookeeper.KeeperException;</span><br><span class="line">import org.apache.zookeeper.WatchedEvent;</span><br><span class="line">import org.apache.zookeeper.Watcher;</span><br><span class="line">import org.apache.zookeeper.ZooDefs;</span><br><span class="line">import org.apache.zookeeper.ZooKeeper;</span><br><span class="line">import org.apache.zookeeper.data.Stat;</span><br><span class="line"></span><br><span class="line">import java.io.IOException;</span><br><span class="line">import java.util.ArrayList;</span><br><span class="line">import java.util.Collections;</span><br><span class="line">import java.util.List;</span><br><span class="line">import java.util.concurrent.CountDownLatch;</span><br><span class="line">import java.util.concurrent.TimeUnit;</span><br><span class="line">import java.util.concurrent.locks.Condition;</span><br><span class="line">import java.util.concurrent.locks.Lock;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @Auther: wuzhiwen</span><br><span class="line"> * @Date: 2018/11/11 15:47</span><br><span class="line"> * @Description:</span><br><span class="line"> */</span><br><span class="line">public class DistributedLock implements Lock, Watcher &#123;</span><br><span class="line">    //zookeeper连接</span><br><span class="line">    private ZooKeeper zooKeeper = null;</span><br><span class="line"></span><br><span class="line">    //会话时间</span><br><span class="line">    private int sessionTimeout = 30000;</span><br><span class="line"></span><br><span class="line">    //根节点</span><br><span class="line">    private String rootLock = &quot;/rootlock&quot;;</span><br><span class="line"></span><br><span class="line">    //计数器</span><br><span class="line">    private CountDownLatch countDownLatch;</span><br><span class="line"></span><br><span class="line">    //异常集合</span><br><span class="line">    private List&lt;Exception&gt; exceptionList = new ArrayList&lt;Exception&gt;();</span><br><span class="line"></span><br><span class="line">    //等待前一个锁</span><br><span class="line">    private String WAIT_LOCK;</span><br><span class="line"></span><br><span class="line">    //竞争的资源</span><br><span class="line">    private String lockName;</span><br><span class="line"></span><br><span class="line">    //当前锁</span><br><span class="line">    // 当前锁</span><br><span class="line">    private String CURRENT_LOCK;</span><br><span class="line"></span><br><span class="line">    public DistributedLock(String config, String lockName) &#123;</span><br><span class="line">            this.lockName = lockName;</span><br><span class="line">        try &#123;</span><br><span class="line">            zooKeeper = new ZooKeeper(config, sessionTimeout, this);</span><br><span class="line">            //判断根节点是否存在, false则不是有this.watchManager.defaultWatcher 默认的Watcher</span><br><span class="line">            Stat stat = zooKeeper.exists(rootLock, false);</span><br><span class="line">            if (stat == null) &#123;</span><br><span class="line">                //path：创建节点路径，需保证父节点已存在 ,data：节点数据 acl:权限列表, createMode:节点类型</span><br><span class="line">                /*</span><br><span class="line">                 *  acl:权限列表</span><br><span class="line">                 *      OPEN_ACL_UNSAFE：完全开放</span><br><span class="line">                 *      CREATOR_ALL_ACL：创建该znode的连接拥有所有权限</span><br><span class="line">                 *      READ_ACL_UNSAFE：所有的客户端都可读</span><br><span class="line">                 *</span><br><span class="line">                 *   createMode:节点类型</span><br><span class="line">                 *      PERSISTENT：持久化节点</span><br><span class="line">                 *      PERSISTENT_SEQUENTIAL：持久化有序节点</span><br><span class="line">                 *      EPHEMERAL：临时节点（连接断开自动删除）</span><br><span class="line">                 *      EPHEMERAL_SEQUENTIAL：临时有序节点（连接断开自动删除）</span><br><span class="line">                 *</span><br><span class="line">                 */</span><br><span class="line">                zooKeeper.create(rootLock, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (KeeperException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void lock() &#123;</span><br><span class="line">        //对异常进行判断</span><br><span class="line">        if (exceptionList.size() &gt; 0) &#123;</span><br><span class="line">            throw new LockException(exceptionList.get(0));</span><br><span class="line">        &#125;</span><br><span class="line">        //获取锁</span><br><span class="line">        if (this.tryLock()) &#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + &quot; &quot; + lockName + &quot;获得了锁&quot;);</span><br><span class="line">            return;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            waitLocak(WAIT_LOCK, sessionTimeout);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //设置监听</span><br><span class="line">    private boolean waitLocak(String wait_lock, long sessionTimeout) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Stat stat = zooKeeper.exists(rootLock + &quot;/&quot; + wait_lock, true);</span><br><span class="line">            if (stat != null) &#123;</span><br><span class="line">                //创建计数</span><br><span class="line">                this.countDownLatch = new CountDownLatch(1);</span><br><span class="line">                // 计数等待，若等到前一个节点消失，则precess中进行countDown，停止等待，获取锁</span><br><span class="line">                this.countDownLatch.await(sessionTimeout, TimeUnit.MILLISECONDS);</span><br><span class="line">                this.countDownLatch = null;</span><br><span class="line">            &#125;</span><br><span class="line">            return true;</span><br><span class="line">        &#125; catch (KeeperException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void lockInterruptibly() throws InterruptedException &#123;</span><br><span class="line">        this.lock();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean tryLock() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            //设置子节点命名规则，便于后别切割分别和排序</span><br><span class="line">            String lockSplit = &quot;_lock_&quot;;</span><br><span class="line">            String sonName = rootLock + &quot;/&quot; + lockName + lockSplit;</span><br><span class="line">            //创建临时子节点</span><br><span class="line">            CURRENT_LOCK = zooKeeper.create(sonName, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);</span><br><span class="line">            //获取所有子节点列表</span><br><span class="line">            List&lt;String&gt; children = zooKeeper.getChildren(rootLock, false);</span><br><span class="line"></span><br><span class="line">            List&lt;String&gt; sonList = new ArrayList&lt;&gt;();</span><br><span class="line">            //判断是否是最小节点</span><br><span class="line">            for (String child : children) &#123;</span><br><span class="line">                //将所有节点根据命名规则切割</span><br><span class="line">                String[] split = child.split(lockSplit);</span><br><span class="line">                //只将该资源下的节点保存</span><br><span class="line">                if (split[0].equals(lockName)) &#123;</span><br><span class="line">                    sonList.add(child);</span><br><span class="line">                &#125;</span><br><span class="line">                //排序</span><br><span class="line">                Collections.sort(sonList);</span><br><span class="line">                //判断最小</span><br><span class="line">                if (CURRENT_LOCK.equals(rootLock + &quot;/&quot; + sonList.get(0))) &#123;</span><br><span class="line">                    return true;</span><br><span class="line">                &#125;</span><br><span class="line">                //这样的写法相对的是遍历查询，效率不是很高，</span><br><span class="line">                //如果不是 则找到自己前面的节点</span><br><span class="line">                for (int i = 0; i &lt; sonList.size(); i++) &#123;</span><br><span class="line">                    if (CURRENT_LOCK.equals(rootLock + &quot;/&quot; + sonList.get(i))) &#123;</span><br><span class="line">                        //对前一个小的节点进行定位</span><br><span class="line">                        WAIT_LOCK = sonList.get(--i);</span><br><span class="line">                        //在这里设置监听会好点 我觉得</span><br><span class="line">                        break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                // 若不是最小节点，则找到自己的前一个节点</span><br><span class="line">                // 因为我们已经进行了排序，所以使用集合自带Collections.binarySearch()的方法，二分查找效率会快点。</span><br><span class="line">//                String prevNode = CURRENT_LOCK.substring(CURRENT_LOCK.lastIndexOf(&quot;/&quot;) + 1);</span><br><span class="line">//                WAIT_LOCK = sonList.get(Collections.binarySearch(sonList, prevNode) - 1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (KeeperException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException &#123;</span><br><span class="line">        if (this.tryLock()) &#123;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">        return waitLocak(WAIT_LOCK, time);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void unlock() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            System.out.println(&quot;删除锁&quot;);</span><br><span class="line">            zooKeeper.delete(CURRENT_LOCK, -1);</span><br><span class="line">            CURRENT_LOCK = null;</span><br><span class="line">            zooKeeper.close();</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (KeeperException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Condition newCondition() &#123;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 节点监视器</span><br><span class="line">     *</span><br><span class="line">     * @param watchedEvent</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void process(WatchedEvent watchedEvent) &#123;</span><br><span class="line">        if (countDownLatch != null) &#123;</span><br><span class="line">            this.countDownLatch.countDown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>2.测试代码 </p>
+<hr>
+
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">	package com.zhiwen.controller;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.util.DistributedLock;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @Auther: wuzhiwen</span><br><span class="line"> * @Date: 2018/11/12 10:46</span><br><span class="line"> * @Description:</span><br><span class="line"> */</span><br><span class="line">public class ZkDistributed &#123;</span><br><span class="line"></span><br><span class="line">    static int n = 500;</span><br><span class="line"></span><br><span class="line">    public static void secskill() &#123;</span><br><span class="line">        System.out.println(--n);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        Runnable runnable = new Runnable() &#123;</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                DistributedLock lock = null;</span><br><span class="line">                try &#123;</span><br><span class="line">                    lock = new DistributedLock(&quot;192.168.91.129:2181&quot;, &quot;test1&quot;);</span><br><span class="line">                    lock.lock();</span><br><span class="line">                    secskill();</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + &quot;正在运行&quot;);</span><br><span class="line">                &#125; finally &#123;</span><br><span class="line">                    if (lock != null) &#123;</span><br><span class="line">                        lock.unlock();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        for (int i = 0; i &lt; 10; i++) &#123;</span><br><span class="line">            Thread t = new Thread(runnable);</span><br><span class="line">            t.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>启动后会报错，日志jar冲突<br><br>解决方法：<br></p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.apache.zookeeper&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;zookeeper&lt;/artifactId&gt;</span><br><span class="line">          &lt;version&gt;3.4.8&lt;/version&gt;</span><br><span class="line">          &lt;exclusions&gt;</span><br><span class="line">              &lt;exclusion&gt; &lt;groupId&gt;org.slf4j&lt;/groupId&gt; &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;&lt;/exclusion&gt;</span><br><span class="line">              &lt;exclusion&gt; &lt;groupId&gt;log4j&lt;/groupId&gt; &lt;artifactId&gt;log4j&lt;/artifactId&gt; &lt;/exclusion&gt;</span><br><span class="line">          &lt;/exclusions&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+</code></pre><p>我在写DistributedLock类时，根据原理流程参考了博客后，自己书写的，有些代码是粘的，但是都是经过测试，可以放心使用。<br><br>测试代码<a href="https://gitee.com/ZuiJi/distributed.git" target="_blank" rel="noopener">https://gitee.com/ZuiJi/distributed.git</a></p>
+<p>这样的代码其实缺陷还是很多的，由于没有很好地环境进行测试，有时候我自己很难想出哪里有什么问题，我一直认为自己写的代码是完美的！！！。为了可以提高代码的稳定性、可靠性、有效性，我们来看下别人的代码（别人家的孩子总是好的！！！！）</p>
+<p>导入依赖，看下别人的实现方式好在哪里</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line"></span><br><span class="line">&lt;groupId&gt;org.apache.curator&lt;/groupId&gt;</span><br><span class="line"></span><br><span class="line">&lt;artifactId&gt;curator-recipes&lt;/artifactId&gt;</span><br><span class="line"></span><br><span class="line">&lt;version&gt;4.0.0&lt;/version&gt;</span><br><span class="line"></span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+</code></pre><p>我们来看下写好的测试方法</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">package com.zhiwen.controller;</span><br><span class="line"></span><br><span class="line">import com.zhiwen.util.DistributedLock;</span><br><span class="line">import org.apache.curator.RetryPolicy;</span><br><span class="line">import org.apache.curator.framework.CuratorFramework;</span><br><span class="line">import org.apache.curator.framework.CuratorFrameworkFactory;</span><br><span class="line">import org.apache.curator.framework.recipes.locks.InterProcessMutex;</span><br><span class="line">import org.apache.curator.retry.ExponentialBackoffRetry;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @Auther: wuzhiwen</span><br><span class="line"> * @Date: 2018/11/12 12:29</span><br><span class="line"> * @Description:</span><br><span class="line"> */</span><br><span class="line">public class CuratorDistributed &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        Runnable runnable = new Runnable() &#123;</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    //创建zookeeper的客户端</span><br><span class="line">                    RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);</span><br><span class="line">//                    CuratorFramework client = CuratorFrameworkFactory.newClient(&quot;192.168.91.129:2181,192.168.91.129:2182,192.168.91.129:2183&quot;, retryPolicy);</span><br><span class="line">                    CuratorFramework client = CuratorFrameworkFactory.newClient(&quot;192.168.91.129:2181&quot;, retryPolicy);</span><br><span class="line">                    client.start();</span><br><span class="line">                    //创建分布式锁, 锁空间的根节点路径为/curator/lock</span><br><span class="line">                    InterProcessMutex mutex = new InterProcessMutex(client, &quot;/rootCurator/lock&quot;);</span><br><span class="line">                    mutex.acquire();</span><br><span class="line">                    //获得了锁, 进行业务流程</span><br><span class="line">                    System.out.println(&quot;业务运行成功&quot;);</span><br><span class="line">                    //完成业务流程, 释放锁</span><br><span class="line">                    mutex.release();</span><br><span class="line">                    //关闭客户端</span><br><span class="line">                    client.close();</span><br><span class="line">                &#125; catch (Exception e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        for (int i = 0; i &lt; 10; i++) &#123;</span><br><span class="line">            Thread t = new Thread(runnable);</span><br><span class="line">            t.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>使用别人的代码感觉就是很简单，好了我们来看下curator加锁和解锁的方法优秀之处。<br>加锁mutex.acquire()方法实现的，来看下源码：</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">点击去后可以看到方法</span><br><span class="line"></span><br><span class="line">	public void acquire() throws Exception &#123;</span><br><span class="line">        if (!this.internalLock(-1L, (TimeUnit)null)) &#123;</span><br><span class="line">			//	如果失去连接则会抛出异常</span><br><span class="line">            throw new IOException(&quot;Lost connection while trying to acquire lock: &quot; + this.basePath);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">接着点入this.internalLock(-1L, (TimeUnit)null)方法</span><br><span class="line"></span><br><span class="line">	private boolean internalLock(long time, TimeUnit unit) throws Exception &#123;</span><br><span class="line">		//获取当前线程</span><br><span class="line">        Thread currentThread = Thread.currentThread();</span><br><span class="line">		//获取当前锁</span><br><span class="line">        InterProcessMutex.LockData lockData = (InterProcessMutex.LockData)this.threadData.get(currentThread);</span><br><span class="line">		//如果不为null,则说明获取锁，返回true</span><br><span class="line">        if (lockData != null) &#123;</span><br><span class="line">            lockData.lockCount.incrementAndGet();</span><br><span class="line">            return true;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">			//获取当前锁节点，在这个方法中它会一直等待，知道加锁成功</span><br><span class="line">            String lockPath = this.internals.attemptLock(time, unit, this.getLockNodeBytes());</span><br><span class="line">            if (lockPath != null) &#123;</span><br><span class="line">				//成功后记录锁的信息，</span><br><span class="line">                InterProcessMutex.LockData newLockData = new InterProcessMutex.LockData(currentThread, lockPath, null);</span><br><span class="line">                this.threadData.put(currentThread, newLockData);</span><br><span class="line">                return true;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">				//没有获取锁，失败处理，在上一个方法会抛出通信失败异常</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">this.internals.attemptLock(time, unit, this.getLockNodeBytes())方法</span><br><span class="line"></span><br><span class="line">	String attemptLock(long time, TimeUnit unit, byte[] lockNodeBytes) throws Exception &#123;</span><br><span class="line">        long startMillis = System.currentTimeMillis();</span><br><span class="line">        Long millisToWait = unit != null ? unit.toMillis(time) : null;</span><br><span class="line">        byte[] localLockNodeBytes = this.revocable.get() != null ? new byte[0] : lockNodeBytes;</span><br><span class="line">        int retryCount = 0;</span><br><span class="line">        String ourPath = null;</span><br><span class="line">        boolean hasTheLock = false;</span><br><span class="line">        boolean isDone = false;</span><br><span class="line">		//以上是初始化参数</span><br><span class="line">		</span><br><span class="line">		//刚开始我看着到这也是不懂，这样是干嘛呢？</span><br><span class="line">        while(!isDone) &#123;</span><br><span class="line">            isDone = true;</span><br><span class="line"></span><br><span class="line">            try &#123;</span><br><span class="line">				//在锁空间下创建临时且有序的子节点</span><br><span class="line">                ourPath = this.driver.createsTheLock(this.client, this.path, localLockNodeBytes);</span><br><span class="line">				//判断获取锁是否是最小的，不是最小则一直监听比它小一个的节点</span><br><span class="line">                hasTheLock = this.internalLockLoop(startMillis, millisToWait, ourPath);</span><br><span class="line">            &#125; catch (NoNodeException var14) &#123;</span><br><span class="line">				//NoNodeException是只有会话结束时才会抛出的异常，所以会进行重试，如果是会话结束 才throw var14;</span><br><span class="line">                if (!this.client.getZookeeperClient().getRetryPolicy().allowRetry(retryCount++, System.currentTimeMillis() - startMillis, RetryLoop.getDefaultRetrySleeper())) &#123;</span><br><span class="line">                    throw var14;</span><br><span class="line">                &#125;</span><br><span class="line">				//现在知道了，这个是作为判断是否出现异常，异常了还要继续进行</span><br><span class="line">                isDone = false;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">		</span><br><span class="line">        return hasTheLock ? ourPath : null;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>internalLockLoop(startMillis, millisToWait, ourPath)核心方法，我前面写的tryLock()效果跟他差不多，不过很明显在严谨上是不如它的。尴尬</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">private boolean internalLockLoop(long startMillis, Long millisToWait, String ourPath) throws Exception &#123;</span><br><span class="line">	//两个标记</span><br><span class="line">       boolean haveTheLock = false;</span><br><span class="line">       boolean doDelete = false;</span><br><span class="line"></span><br><span class="line">       try &#123;</span><br><span class="line">           if (this.revocable.get() != null) &#123;</span><br><span class="line">               ((BackgroundPathable)this.client.getData().usingWatcher(this.revocableWatcher)).forPath(ourPath);</span><br><span class="line">           &#125;</span><br><span class="line">		//我们后面再来看这个比较的意义</span><br><span class="line">           while(this.client.getState() == CuratorFrameworkState.STARTED &amp;&amp; !haveTheLock) &#123;</span><br><span class="line">			//获取所有的字节点</span><br><span class="line">               List&lt;String&gt; children = this.getSortedChildren();</span><br><span class="line">			//如果大家跟着前面代码看完了则很简单这个是获取节点名</span><br><span class="line">               String sequenceNodeName = ourPath.substring(this.basePath.length() + 1);</span><br><span class="line">			//判断是否是最小节点</span><br><span class="line">               PredicateResults predicateResults = this.driver.getsTheLock(this.client, children, sequenceNodeName, this.maxLeases);</span><br><span class="line">			//如果是最小节点则返回true</span><br><span class="line">               if (predicateResults.getsTheLock()) &#123;</span><br><span class="line">                   haveTheLock = true;</span><br><span class="line">               &#125; else &#123;</span><br><span class="line">				//下面的方法大家肯定知道了 就是设置监听了啊，先获取比自己小一个的节点，然后监听。</span><br><span class="line"></span><br><span class="line">				//获取比自己小一个的节点</span><br><span class="line">                   String previousSequencePath = this.basePath + &quot;/&quot; + predicateResults.getPathToWatch();</span><br><span class="line">				//加锁保证不会并发，但是我也不知道并发会发生什么？？</span><br><span class="line">				//别人的解释：这里使用对象监视器做线程同步，当获取不到锁时监听前一个子节点删除消息并且进行wait()，当前一个子节点删除（也就是锁释放）时，回调会通过</span><br><span class="line">				//notifyAll唤醒此线程，此线程继续自旋判断是否获得锁.但是这样会有一个消耗notifyAll,会唤醒所有线程，消耗会很大啊。</span><br><span class="line">                   synchronized(this) &#123;</span><br><span class="line">                       try &#123;</span><br><span class="line">						//这里使用getData(),为什么不用checkExists?我们知道如果使用checkExists它是查询和设置监听一起完成的，它的操作具有原子性的。</span><br><span class="line">						//如果前一个节点已经删除了，则监听会一直监听，这是一种资源泄露（看别人是这样说的）。</span><br><span class="line">						//使用getData()，如果监听的节点被删除了,则会抛出异常，回到上面 isDone=false 则只需自旋解锁一次就可以了。</span><br><span class="line">						//看到这里，那我自己也行修改下前面自己定义的zookeeper.exite()，方法</span><br><span class="line">                           ((BackgroundPathable)this.client.getData().usingWatcher(this.watcher)).forPath(previousSequencePath);</span><br><span class="line">						//最小等待时间不为null,则继续等待</span><br><span class="line">                           if (millisToWait == null) &#123;</span><br><span class="line">                               this.wait();</span><br><span class="line">                           &#125; else &#123;</span><br><span class="line">							//设置等待时间</span><br><span class="line">                               millisToWait = millisToWait - (System.currentTimeMillis() - startMillis);</span><br><span class="line">                               startMillis = System.currentTimeMillis();</span><br><span class="line">                               if (millisToWait &gt; 0L) &#123;</span><br><span class="line">                                   this.wait(millisToWait);</span><br><span class="line">                               &#125; else &#123;</span><br><span class="line">								//无等待时间，则在finally删除该节点</span><br><span class="line">                                   doDelete = true;</span><br><span class="line">                                   break;</span><br><span class="line">                               &#125;</span><br><span class="line">                           &#125;</span><br><span class="line">                       &#125; catch (NoNodeException var19) &#123;</span><br><span class="line">                           ;</span><br><span class="line">                       &#125;</span><br><span class="line">                   &#125;</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125; catch (Exception var21) &#123;</span><br><span class="line">           ThreadUtils.checkInterrupted(var21);</span><br><span class="line">           doDelete = true;</span><br><span class="line">           throw var21;</span><br><span class="line">       &#125; finally &#123;</span><br><span class="line">           if (doDelete) &#123;</span><br><span class="line">               this.deleteOurPath(ourPath);</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">       &#125;</span><br><span class="line">       return haveTheLock;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>mutex.release();这个就相当于我写的unlock()大家自己去看吧。<br>看完别人写的源码后，我自己又去优化了下代码，现在还没有跑起来，估计是今天</p>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
+  <div class="random-toc">
+    <h2>目录</h2>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#代码实现"><span class="toc-text">代码实现</span></a></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+    <a href="/2019/06/25/distuted/分布式锁实现方案/" class="prev">&larr; 上一篇 分布式锁的实现方案</a>
+  
+
+  
+
+  
+    <a href="/2019/06/25/distuted/redis分布式锁/" class="next">下一篇 redis实现分布式锁实现代码以及原理分析 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+  
+  <style>
+    .donation {
+      width: 100%;
+      margin-top: 2rem;
+    }
+    .donation .text[name="zhifubao"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .donation .text[name="weixin"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding-left:546px; 
+    }
+    .donation .text:hover {
+      color: rgb(63,134,181);
+    }
+    .donation .img-box {
+      transition: all .3s;
+      width: 0;
+      height: 0;
+      margin: 1rem auto;
+      overflow: hidden;
+    }
+    .donation .img-box img {
+      width: 100%;
+      height: 100%;
+    }
+    .donation #donation {
+      display: none;
+    }
+    .donation #donation:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+    .donation #donation1 {
+      display: none;
+    }
+    .donation #donation1:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+  </style>
+  <div class="donation">
+  如果你觉得文章对你有帮助，并且钱多的没地方花的时候，点这里～
+    <label class="text" name="zhifubao" for="donation">
+      支付宝
+    </label>
+    <input type="checkbox" name="donation" id="donation">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation.jpg" alt="donation">
+    </div>
+    <label class="text" name="weixin" for="donation1">
+      微信
+    </label>
+    <input type="checkbox" name="donation" id="donation1">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation1.jpg" alt="donation">
+    </div>
+  </div>
+
+
+  
+
+
+<style>
+	gitment_title:hover {
+	color: #fff;
+	background: #0a9caf;
+	background-image: initial;
+	background-position-x: initial;
+	background-position-y: initial;
+	background-size: initial;
+	background-repeat-x: initial;
+	background-repeat-y: initial;
+	background-attachment: initial;
+	background-origin: initial;
+	background-clip: initial;
+	background-color: rgb(10, 156, 175);
+	}
+	.gitment_title {
+	border: 1px solid #0a9caf;
+	border-top-color: rgb(10, 156, 175);
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-right-color: rgb(10, 156, 175);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-bottom-color: rgb(10, 156, 175);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(10, 156, 175);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	border-radius: 4px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	}
+	.gitment_title {
+	display: inline-block;
+	padding: 0 15px;
+	padding-top: 0px;
+	padding-right: 15px;
+	padding-bottom: 0px;
+	padding-left: 15px;
+	color: #0a9caf;
+	cursor: pointer;
+	font-size: 14px;
+	}
+</style>
+<div onclick="showGitment()" id="gitment_title" class="gitment_title">显示 Gitment 评论</div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+function showGitment() {
+$("#gitment_title").attr("style", "display:none");
+$("#gitalk-container").attr("style", "").addClass("gitment_container");
+var gitment = new Gitalk({
+id: hex_md5(window.location.pathname),
+owner: 'ZuiJiZhiRen',
+repo: 'comment',
+clientID: '26b1ecdcbd2a38769dec',
+clientSecret: 'b1848c935f489b3ce679458d801a3d9c1418ce98',
+admin: 'ZuiJiZhiRen',
+distractionFreeMode: 'true'
+});
+gitment.render('gitalk-container');
+}
+</script>
+
+
+ 
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by 文哥 using
+      <a href="http://hexo.io">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+    <p id="description">java springboot springCloud 。。。。</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://gitee.com/ZuiJi">
+        
+          GitHub
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+    <script src="/js/md5.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+    
+      backgroundImages.push('https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg');
+    
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":28};
+var unsplashConfig = {"gravity":"west"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+

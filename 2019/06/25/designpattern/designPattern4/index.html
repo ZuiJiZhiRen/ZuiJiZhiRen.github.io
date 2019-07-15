@@ -1,0 +1,475 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="文哥">
+  
+  
+  <meta name="keywords" content="java js python">
+  
+  
+  
+    <meta name="description" content="外观模式定义定义：外观模式（Facade Pattern）隐藏系统的复杂性，并向客户端提供了一个客户端可以访问系统的接口。这种类型的设计模式属于结构型模式，它向现有的系统添加一个接口，来隐藏系统的复杂性。
+区别看了外观的代码实现呢，我有点模糊啊，因为我感觉跟建造者模式很是相似。所以在学习外观模式之前可以先来区别下它们。建造者模式：建造者模式（Builder）,将一个复杂对象的构件与它的表示分...">
+  
+  <title>23中设计模式学习——外观模式、桥接模式 [ 志文的个人博客 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+  
+  <link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+  
+</head>
+
+<body>
+<div id="access_people_count" style="display:none;">
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+</div>
+<div class="side-navigate hide-area">
+  
+    <div class="item prev">
+      <a href="/2019/06/25/distuted/redis分布式锁二/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        redis集群分布式锁实现
+      </div>
+    </div>
+  
+  
+    <div class="item next">
+      <a href="/2019/06/25/designpattern/designPattern3/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        23中设计模式学习——建造者模式，原型模式
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onclick="openUserCard()">
+          <img id="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+          <div id="homelink">志文的个人博客</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories/index/">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://gitee.com/ZuiJi">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  <article id="post">
+    <h1>23中设计模式学习——外观模式、桥接模式</h1>
+    <p class="page-title-sub">
+      <span id="post-title-date">撰写于 2019-06-25</span>
+      
+        <span id="post-title-updated">修改于 2019-06-25</span>
+      
+      
+      <span id="post-title-categories">分类
+      
+      
+        
+        
+        <a href="/categories/设计模式/">设计模式</a>
+      
+      </span>
+      
+      
+    </p>
+    
+    <h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>定义：外观模式（Facade Pattern）隐藏系统的复杂性，并向客户端提供了一个客户端可以访问系统的接口。这种类型的设计模式属于结构型模式，它向现有的系统添加一个接口，来隐藏系统的复杂性。</p>
+<h3 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h3><p>看了外观的代码实现呢，我有点模糊啊，因为我感觉跟建造者模式很是相似。所以在学习外观模式之前可以先来区别下它们。<br><strong>建造者模式</strong>：建造者模式（Builder）<strong><em>,将一个复杂对象的构件与它的表示分离，使得同样的构建过程可以创建不同的表示</em></strong>。如果你需要讲一个复杂对象的构建与它的不是分离，使得同样的构建过程可以创建不同的表示的意图时，我们需要建造者模式，又叫生成器模式。建造者模式可以将一个产品的内部表象与产品的生成过程分割开来，从而可以使一个建造过程生成具有不同的内部表象的产品对象。如果我们用了建造者模式，那么用户就只需指定需要建造的类型就可以得到它们，而具体建造的过程和细节就不需知道啦。<br><strong>外观  模式</strong>：外观模式（Facade），为子系统中的一组接口提供一个一致的界面，此模式定义了一个高层接口，这个接口使得这一子系统更加容易使用。<br><strong>区     别</strong>：思想上外观模式一个是封装一组接口，建造者模式是根据不同的Client,生成不同的需求。方法实现上可能有些许类似，单总体思想上能够区分它的。</p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><ol>
+<li>各种形状实体类<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">显示目录</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">隐藏目录</button>
+  <div class="random-toc">
+    <h2>目录</h2>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#外观模式"><span class="toc-text">外观模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#定义"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#区别"><span class="toc-text">区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码实现"><span class="toc-text">代码实现</span></a></li></ol></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+    <a href="/2019/06/25/distuted/redis分布式锁二/" class="prev">&larr; 上一篇 redis集群分布式锁实现</a>
+  
+
+  
+
+  
+    <a href="/2019/06/25/designpattern/designPattern3/" class="next">下一篇 23中设计模式学习——建造者模式，原型模式 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+  
+  <style>
+    .donation {
+      width: 100%;
+      margin-top: 2rem;
+    }
+    .donation .text[name="zhifubao"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .donation .text[name="weixin"] {
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding-left:546px; 
+    }
+    .donation .text:hover {
+      color: rgb(63,134,181);
+    }
+    .donation .img-box {
+      transition: all .3s;
+      width: 0;
+      height: 0;
+      margin: 1rem auto;
+      overflow: hidden;
+    }
+    .donation .img-box img {
+      width: 100%;
+      height: 100%;
+    }
+    .donation #donation {
+      display: none;
+    }
+    .donation #donation:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+    .donation #donation1 {
+      display: none;
+    }
+    .donation #donation1:checked + .img-box {
+      width: 16rem;
+      height: 16rem;
+    }
+  </style>
+  <div class="donation">
+  如果你觉得文章对你有帮助，并且钱多的没地方花的时候，点这里～
+    <label class="text" name="zhifubao" for="donation">
+      支付宝
+    </label>
+    <input type="checkbox" name="donation" id="donation">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation.jpg" alt="donation">
+    </div>
+    <label class="text" name="weixin" for="donation1">
+      微信
+    </label>
+    <input type="checkbox" name="donation" id="donation1">
+    <div class="img-box">
+      <img src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/donation1.jpg" alt="donation">
+    </div>
+  </div>
+
+
+  
+
+
+<style>
+	gitment_title:hover {
+	color: #fff;
+	background: #0a9caf;
+	background-image: initial;
+	background-position-x: initial;
+	background-position-y: initial;
+	background-size: initial;
+	background-repeat-x: initial;
+	background-repeat-y: initial;
+	background-attachment: initial;
+	background-origin: initial;
+	background-clip: initial;
+	background-color: rgb(10, 156, 175);
+	}
+	.gitment_title {
+	border: 1px solid #0a9caf;
+	border-top-color: rgb(10, 156, 175);
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-right-color: rgb(10, 156, 175);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-bottom-color: rgb(10, 156, 175);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(10, 156, 175);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	border-radius: 4px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	}
+	.gitment_title {
+	display: inline-block;
+	padding: 0 15px;
+	padding-top: 0px;
+	padding-right: 15px;
+	padding-bottom: 0px;
+	padding-left: 15px;
+	color: #0a9caf;
+	cursor: pointer;
+	font-size: 14px;
+	}
+</style>
+<div onclick="showGitment()" id="gitment_title" class="gitment_title">显示 Gitment 评论</div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+function showGitment() {
+$("#gitment_title").attr("style", "display:none");
+$("#gitalk-container").attr("style", "").addClass("gitment_container");
+var gitment = new Gitalk({
+id: hex_md5(window.location.pathname),
+owner: 'ZuiJiZhiRen',
+repo: 'comment',
+clientID: '26b1ecdcbd2a38769dec',
+clientSecret: 'b1848c935f489b3ce679458d801a3d9c1418ce98',
+admin: 'ZuiJiZhiRen',
+distractionFreeMode: 'true'
+});
+gitment.render('gitalk-container');
+}
+</script>
+
+
+ 
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by 文哥 using
+      <a href="http://hexo.io">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg">
+    <p id="description">java springboot springCloud 。。。。</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://gitee.com/ZuiJi">
+        
+          GitHub
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+    <script src="/js/md5.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+    
+      backgroundImages.push('https://wuzhiwen.oss-cn-beijing.aliyuncs.com/avatar1.jpg');
+    
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":28};
+var unsplashConfig = {"gravity":"west"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+
